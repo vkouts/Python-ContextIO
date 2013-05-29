@@ -16,7 +16,7 @@ You'll probably want to toss a sudo before that, depending on your OS. That's it
 ##Usage
 You first need to instantiate the main ContextIO object with your API credentials:
 
-	import contextIO2 as c
+	import contextio as c
     
 	CONSUMER_KEY = 'YOUR_API_KEY'
 	CONSUMER_SECRET = 'YOUR_API_SECRET'

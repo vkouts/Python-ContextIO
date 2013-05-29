@@ -5,7 +5,7 @@ To use it, you have to [sign up for an account](http://context.io).
 Once you have an account, you can create a new `ContextIO` object and interact
 with the API using the methods on that object as a starting point.
 
-import contextIO2 as c
+import contextio as c
 
 CONSUMER_KEY = 'YOUR_API_KEY'
 CONSUMER_SECRET = 'YOUR_API_SECRET'
