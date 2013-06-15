@@ -2098,6 +2098,9 @@ class Source(Resource):
             status: integer - If the status of the source is TEMP_DISABLED or 
                 DISABLED. You can do a POST/PUT with status set to 1 to reset 
                 it.
+            force_status_check: integer - Creates an IMAP connection and 
+                resets the source status to to one reported by the IMAP
+                backend. Don't combine this with other parameters.
             sync_period: string - Changes the period at which the Context.IO 
                 index for this source is synced with the origin email account 
                 on the IMAP server. Possible values are 1h, 4h, 12h and 24h 
@@ -2118,7 +2121,7 @@ class Source(Resource):
         Returns:
             Bool
         """
-        all_args = ['status', 'sync_period', 
+        all_args = ['status', 'force_status_check', 'sync_period', 
             'password', 'provider_token', 'provider_token_secret', 
             'provider_consumer_key'
         ]
