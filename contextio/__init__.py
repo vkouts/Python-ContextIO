@@ -84,9 +84,6 @@ class ContextIO(object):
                 messages will be sent to stdout. If set to 'log' will send
                 to logging.debug()
         """
-        self.consumer = Consumer(key=consumer_key, secret=consumer_secret)
-        self.client = Client(self.consumer)
-        self.client.set_signature_method(sha1())
         self.version = '2.0'
         self.debug = debug
 
@@ -162,7 +159,10 @@ class ContextIO(object):
         elif method == 'POST' and params:
             body = urlencode(params)
         self.debug_message('-=CONTEXTIO.REQUEST=-\nurl: %s\nmethod: %s\nparams: %s\nheaders: %s\nbody: %s\n' % (url, method, params, headers, body))
-        return self.client.request(url, method, headers=headers, body=body)
+        consumer = Consumer(key=consumer_key, secret=consumer_secret)
+        client = Client(consumer)
+        client.set_signature_method(sha1())
+        return client.request(url, method, headers=headers, body=body)
 
     def _handle_request_error(self, response, body):
         """This method formats request errors and raises appropriate 
