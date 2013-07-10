@@ -175,13 +175,15 @@ class ContextIO(object):
     def _handle_request_error(self, response):
         """This method formats request errors and raises appropriate 
             exceptions."""
-        try:
-            response_json = response.json()
+        response_json = response.json()
+        if 'code' in response_json and 'value' in response_json:
             raise Exception(
-                'HTTP %s: %s' % (response_json['code'], response_json['value'])
+                'HTTP %s: %s' % (
+                    response_json['code'],
+                    response_json['value']
+                )
             )
-
-        except (ValueError, KeyError):
+        else:
             raise Exception(response.text)
 
     def get_accounts(self, **params):
