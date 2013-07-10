@@ -39,7 +39,7 @@ message = Message(account, {'id': 'MESSAGE_ID'})
 import logging
 import re
 
-from oauth2 import Request, Consumer, Client, SignatureMethod_HMAC_SHA1 as sha1
+from rauth import OAuth1Session
 from urllib import urlencode, quote
 
 from util import as_bool, as_datetime, process_person_info, uncamelize
@@ -70,9 +70,9 @@ class ContextIO(object):
             will be printed out. Useful for python's interactive console. If 
             set to 'log' will send debug messages to logging.debug()
     """
-    url_base = "https://api.context.io"
 
-    def __init__(self, consumer_key, consumer_secret, debug=None):
+    def __init__(self, consumer_key, consumer_secret, debug=None, 
+                    url_base='https://api.context.io'):
         """Constructor that creates oauth2 consumer and client.
         
         Required Arguments:
@@ -84,22 +84,32 @@ class ContextIO(object):
                 messages will be sent to stdout. If set to 'log' will send
                 to logging.debug()
         """
-        self.consumer = Consumer(key=consumer_key, secret=consumer_secret)
-        self.client = Client(self.consumer)
-        self.client.set_signature_method(sha1())
         self.version = '2.0'
         self.debug = debug
+        self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
+        self.url_base = url_base
 
-    def debug_message(self, message):
+    def _debug(self, response):
         """Prints or logs a debug message.
         
         Required Arguments:
-            message: string - the debug message.
+            response: object - the rauth response object.
         
         Returns:
             None
         """
         if self.debug:
+            message = ("--------------------------------------------------\n"
+                "URL:    %s\nMETHOD: %s\nSTATUS: %s\n\nREQUEST\n%s\n\nRESPON"
+                "SE\n%s\n") % (
+                    response.request.url,
+                    response.request.method,
+                    response.status_code,
+                    response.request.__dict__,
+                    response.__dict__
+                )
+            
             if self.debug == 'print':
                 print message
             elif self.debug == 'log':
@@ -123,24 +133,21 @@ class ContextIO(object):
                 method docstrings for more details.
         """
         url = '/'.join((self.url_base, self.version, uri))
-        response, body = self._request(url, method, params, headers, body)
-        status = int(response['status'])
-        self.debug_message('status: %s\nresponse: %s\nbody: %s\n' % (
-                status, response, body
-        ))
+        response = self._request(url, method, params, headers, body)
+        status = response.status_code
+        
         if status >= 200 and status < 300:
             # look for a ValueError
             try:
-                body = json.loads(body)
+                return response.json()
+            except UnicodeDecodeError:
+                return response.raw
             except ValueError:
-                # API didn't return json. Return raw body instead of dictionary
-                return body
-            return body
-
+                return response.text
         else:
-            self._handle_request_error(response, body)
+            self._handle_request_error(response)
 
-    def _request(self, url, method, params, headers, body=''):
+    def _request(self, url, method, params, headers={}, body=''):
         """This method actually makes the request using the oauth client.
         
         Required Arguments:
@@ -157,28 +164,27 @@ class ContextIO(object):
             typically JSON, depends on the API call. Refer to the specific 
                 method you're calling to learn what the return will be.
         """
-        if method == 'GET' and params:
-            url += '?' + urlencode(params)
-        elif method == 'POST' and params:
-            body = urlencode(params)
-        self.debug_message('-=CONTEXTIO.REQUEST=-\nurl: %s\nmethod: %s\nparams: %s\nheaders: %s\nbody: %s\n' % (url, method, params, headers, body))
-        return self.client.request(url, method, headers=headers, body=body)
+        
+        session = OAuth1Session(self.consumer_key, self.consumer_secret)
+        response = session.request(method, url, header_auth=True, params=params, headers=headers, data=body)
 
-    def _handle_request_error(self, response, body):
+        self._debug(response)
+
+        return response
+
+    def _handle_request_error(self, response):
         """This method formats request errors and raises appropriate 
             exceptions."""
-        messages = []
-        try:
-            body = json.loads(body)
-            for message in body['messages']:
-                if message['type'] == 'error':
-                    messages.append("error {0}".format(message['code']))
+        response_json = response.json()
+        if 'code' in response_json and 'value' in response_json:
             raise Exception(
-                'HTTP %s: %s' % (response['status'], ', '.join(messages))
+                'HTTP %s: %s' % (
+                    response_json['code'],
+                    response_json['value']
+                )
             )
-
-        except (ValueError, KeyError):
-            raise Exception('HTTP %s: %s' % (response['status'], body))
+        else:
+            raise Exception(response.text)
 
     def get_accounts(self, **params):
         """List of Accounts.
@@ -2335,7 +2341,23 @@ class Folder(Resource):
         params = Resource.sanitize_params(params, all_args)
         status = self._request_uri('', method='PUT')
         return bool(status['success'])
+
+    def delete(self):
+        """Remove a given folder.
         
+        DELETE method for the folder resource.
+        
+        Documentation: 
+        
+        Arguments:
+            None
+        
+        Returns:
+            Bool
+        """
+        status = self._request_uri('', method='DELETE')
+        return bool(status['success'])
+
     def get_messages(self, **params):
         """Get current listings of email messages in a given folder.
         

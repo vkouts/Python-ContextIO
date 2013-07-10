@@ -4,7 +4,17 @@ Context.IO API v2.0 Python Library
 This is the python client library for v2.0 of the Context.IO API!
 
 ##Dependencies
-OAUTH2 - If you do not have that, snag it with [pip](https://www.google.com/url?q=https%3A%2F%2Fpypi.python.org%2Fpypi%2Fpip&sa=D&sntz=1&usg=AFQjCNGThKX2uJ01ZiRnmc_lao8tNGFUWQ), [easy_install](http://www.google.com/url?q=http%3A%2F%2Fpeak.telecommunity.com%2FDevCenter%2FEasyInstall&sa=D&sntz=1&usg=AFQjCNHFUDQFUuIc_nAtn_ZV6OzPlMdt1Q), or “Use the [Source](https://www.google.com/url?q=https%3A%2F%2Fgithub.com%2Fsimplegeo%2Fpython-oauth2&sa=D&sntz=1&usg=AFQjCNE10w9QqYPSys1u6dHAzq6pMVGqKw), Luke”
+RAUTH - If you do not have that, snag it with
+```$ pip install rauth```
+or 
+```$ easy_install rauth```
+, or “Use the [Source](https://github.com/litl/rauth), Luke”
+
+REQUESTS - rauth is built on top of the requests module
+```$ pip install requests```
+or
+```$ easy_install requests```
+or [Source](https://github.com/kennethreitz/requests)
 
 ##Installation
 Check out / download the module from git, change directory to the folder with setup.py and run:
