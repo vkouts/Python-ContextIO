@@ -183,6 +183,13 @@ class ContextIO(object):
                     response_json['value']
                 )
             )
+        elif 'type' in response_json and 'value' in response_json:
+            raise Exception(
+                '%s: %s' % (
+                    response_json['type'],
+                    response_json['value']
+                )
+            )
         else:
             raise Exception(response.text)
 
