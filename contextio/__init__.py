@@ -171,7 +171,7 @@ class ContextIO(object):
             params['body'] = body
             response = session.request(method, url, header_auth=True, data=params, headers=headers)
         else:
-            response = session.request(method, url, header_auth=True, params=params, headers=headers, body=body)
+            response = session.request(method, url, header_auth=True, params=params, headers=headers, data=body)
 
         self._debug(response)
 
