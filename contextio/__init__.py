@@ -166,7 +166,12 @@ class ContextIO(object):
         """
         
         session = OAuth1Session(self.consumer_key, self.consumer_secret)
-        response = session.request(method, url, header_auth=True, params=params, headers=headers, data=body)
+
+        if method == 'POST':
+            params['body'] = body
+            response = session.request(method, url, header_auth=True, data=params, headers=headers)
+        else:
+            response = session.request(method, url, header_auth=True, params=params, headers=headers, body=body)
 
         self._debug(response)
 
