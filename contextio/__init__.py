@@ -86,6 +86,8 @@ class ContextIO(object):
         """
         self.version = '2.0'
         self.debug = debug
+        if self.debug is True:   # for people who don't read the code and just set debug=True
+            self.debug = "print"
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         self.url_base = url_base
@@ -141,7 +143,7 @@ class ContextIO(object):
             try:
                 return response.json()
             except UnicodeDecodeError:
-                return response.raw
+                return response.content
             except ValueError:
                 return response.text
         else:
@@ -1639,7 +1641,8 @@ class Message(Resource):
     """
     keys = ['date', 'date_indexed', 'addresses', 'person_info', 
         'email_message_id', 'message_id', 'gmail_message_id', 
-        'gmail_thread_id', 'files', 'subject', 'folders', 'sources']
+        'gmail_thread_id', 'files', 'subject', 'folders', 'sources',
+        'list_headers', 'facebook_headers']
     
     # set empty properties that will get populated by the get methods
     body = None
