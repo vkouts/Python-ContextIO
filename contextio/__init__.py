@@ -86,6 +86,8 @@ class ContextIO(object):
         """
         self.version = '2.0'
         self.debug = debug
+        if self.debug is True:   # for people who don't read the code and just set debug=True
+            self.debug = "print"
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         self.url_base = url_base
