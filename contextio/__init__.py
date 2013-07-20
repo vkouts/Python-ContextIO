@@ -1639,7 +1639,8 @@ class Message(Resource):
     """
     keys = ['date', 'date_indexed', 'addresses', 'person_info', 
         'email_message_id', 'message_id', 'gmail_message_id', 
-        'gmail_thread_id', 'files', 'subject', 'folders', 'sources']
+        'gmail_thread_id', 'files', 'subject', 'folders', 'sources',
+        'list_headers', 'facebook_headers']
     
     # set empty properties that will get populated by the get methods
     body = None
