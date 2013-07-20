@@ -143,7 +143,7 @@ class ContextIO(object):
             try:
                 return response.json()
             except UnicodeDecodeError:
-                return response.raw
+                return response.content
             except ValueError:
                 return response.text
         else:
