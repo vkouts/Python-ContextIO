@@ -504,7 +504,7 @@ class Resource(object):
             for required_arg in required_args:
                 param = params.get(required_arg)
                 if param == None:
-                    missing_required_args.append(param)
+                    missing_required_args.append(required_arg)
         
             # yell if we're missing a required argument
             if missing_required_args:
