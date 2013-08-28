@@ -1010,6 +1010,9 @@ class Account(Resource):
                 show every single file attachments.
             password: string - Password for authentication on the IMAP server. 
                 Ignored if any of the provider_* parameters are set below.
+            provider_refresh_token: An OAuth2 refresh token obtained from the
+                IMAP account provider to be used to authentify on this email
+                account.
             provider_token: string - An OAuth token obtained from the IMAP 
                 account provider to be used to authentify on this email 
                 account.
@@ -1037,7 +1040,8 @@ class Account(Resource):
         req_args = ['email', 'server', 'username', 'port', 'type', 'use_ssl']
         all_args = [
             'email', 'server', 'username', 'port', 'type', 'use_ssl', 
-            'sync_period', 'raw_file_list', 'password', 'provider_token', 
+            'sync_period', 'raw_file_list', 'password',
+            'provider_refresh_token', 'provider_token', 
             'provider_token_secret', 'provider_consumer_key', 
             'callback_url'
         ]
