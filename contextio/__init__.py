@@ -868,6 +868,12 @@ class Account(Resource):
                 used to refer to special use folders in a language-independant 
                 way. See http://code.google.com/apis/gmail/imap/#xlist 
                 (Gmail specific) and RFC-6154.
+            file_name: string - Search for files based on their name. You can 
+                filter names using typical shell wildcards such as *, ? and [] 
+                or regular expressions by enclosing the search expression in a 
+                leading / and trailing /. For example, *.pdf would give you 
+                all PDF files while /\.jpe?g$/ would return all files whose 
+                name ends with .jpg or .jpeg
             date_before: integer (unix time) - Only include messages before a 
                 given timestamp. The value this filter is applied to is the 
                 Date: header of the message which refers to the time the 
@@ -908,7 +914,7 @@ class Account(Resource):
         """
         all_args = ['subject', 'email', 'to', 
             'sender', 'cc', 'bcc', 'folder', 'date_before', 'date_after', 
-            'indexed_before', 'indexed_after', 'include_body', 
+            'indexed_before', 'indexed_after', 'include_body', 'file_name',
             'include_headers', 'include_flags', 'body_type', 'sort_order', 
             'limit', 'offset'
         ]
