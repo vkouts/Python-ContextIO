@@ -1253,6 +1253,11 @@ class Account(Resource):
                 removed from a message. The value should be the complete name 
                 (including parents if applicable) of the folder you want to 
                 track.
+            include_body: integer - Set to 1 to include the message body in 
+                the result. Since the body must be retrieved from the IMAP 
+                server, expect a performance hit when setting this parameter.
+            body_type: string - Used when include_body is set to get only body 
+                parts of a given MIME-type (for example text/html)
             sync_period: string - Desired maximum delay between the moment the 
                 email comes in the user's mailbox and the time we call the 
                 callback_url. To have your callback_url called as soon as 
@@ -1270,7 +1275,7 @@ class Account(Resource):
             'callback_url', 'failure_notif_url', 'filter_to', 'filter_from', 
             'filter_cc', 'filter_subject', 'filter_thread', 
             'filter_new_important', 'filter_file_name', 'filter_folder_added', 
-            'filter_folder_removed', 'sync_period'
+            'filter_folder_removed', 'include_body', 'body_type', 'sync_period'
         ]
         
         params = Resource.sanitize_params(params, all_args, req_args)
