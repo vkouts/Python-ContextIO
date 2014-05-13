@@ -823,8 +823,8 @@ class Account(Resource):
             A list of File objects
         """
         all_args = [
-            'name', 'email', 'to', 'from', 'cc', 'bcc', 'date_before', 
-            'date_after', 'indexed_before', 'indexed_after', 
+            'file_name', 'name', 'email', 'to', 'from', 'cc', 'bcc',
+            'date_before', 'date_after', 'indexed_before', 'indexed_after',
             'group_by_revisions', 'limit', 'offset'
         ]
         
