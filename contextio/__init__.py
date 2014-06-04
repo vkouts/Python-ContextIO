@@ -2352,6 +2352,21 @@ class Folder(Resource):
         """
         super(Folder, self).__init__(parent, 'folders/{name}', defn)
 
+    def get(self):
+        """Information about a given folder.
+        
+        Documentation: 
+            http://context.io/docs/2.0/accounts/sources/folders#id-get
+        
+        Arguments:
+            None
+        
+        Returns:
+            True if self is updated, else will throw a request error
+        """
+        self.__init__(self.parent, self._request_uri(''))
+        return True
+
     def put(self, **params):
         """Create a folder on an IMAP source.
         
