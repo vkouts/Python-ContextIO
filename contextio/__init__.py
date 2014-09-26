@@ -913,7 +913,7 @@ class Account(Resource):
             A list of Message objects.
         """
         all_args = ['subject', 'email', 'to', 
-            'sender', 'cc', 'bcc', 'folder', 'date_before', 'date_after', 
+            'sender', 'from_', 'cc', 'bcc', 'folder', 'date_before', 'date_after', 
             'indexed_before', 'indexed_after', 'include_body', 'file_name',
             'include_headers', 'include_flags', 'body_type', 'sort_order', 
             'limit', 'offset'
@@ -926,6 +926,10 @@ class Account(Resource):
         if 'sender' in params:
             params['from'] = params['sender']
             del params['sender']
+
+        if 'from_' in params:
+            params['from'] = params['from_']
+            del params['from_']
         
         return [Message(self, obj) for obj in self._request_uri(
             'messages', params=params
@@ -1165,7 +1169,7 @@ class Account(Resource):
                 Thread.get() method to populate the object.
         """
         all_args = [
-            'subject', 'email', 'to', 'sender', 'cc', 'bcc', 'folder', 
+            'subject', 'email', 'to', 'sender', 'from_', 'cc', 'bcc', 'folder', 
             'indexed_before', 'indexed_after', 'active_before', 'active_after',
             'started_before', 'started_after', 'limit', 'offset'
         ]
@@ -1176,6 +1180,10 @@ class Account(Resource):
         if 'sender' in params:
             params['from'] = params['sender']
             del params['sender']
+
+        if 'from_' in params:
+            params['from'] = params['from_']
+            del params['from_']
         
         thread_urls = self._request_uri('threads', params=params)
         objs = []
