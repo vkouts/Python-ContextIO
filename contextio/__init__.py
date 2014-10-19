@@ -718,7 +718,8 @@ class Account(Resource):
             A list of Contact objects
         """
         all_args = [
-            'search', 'active_before', 'active_after', 'limit', 'offset'
+            'search', 'active_before', 'active_after', 'limit', 'offset',
+            'sort_by', 'sort_order'
         ]
         
         params = Resource.sanitize_params(params, all_args)
