@@ -16,6 +16,12 @@ or
 ```$ easy_install requests```
 or [Source](https://github.com/kennethreitz/requests)
 
+SIX - six is a python compatability library for having python2 and python3 in a common codebase
+```$ pip install six```
+or
+```$ easy_install six```
+or [Source](https://bitbucket.org/gutworth/six)
+
 ##Installation
 Check out / download the module from git, change directory to the folder with setup.py and run:
 

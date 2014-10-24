@@ -35,20 +35,95 @@ account object as the parent.
 message = Message(account, {'id': 'MESSAGE_ID'})
 """
 
-
 import logging
 import re
+import six
 
+from datetime import datetime
 from rauth import OAuth1Session
-from urllib import urlencode, quote
 
-from util import as_bool, as_datetime, process_person_info, uncamelize
+if six.PY2:
+    from urllib import urlencode, quote
+else:
+    from urllib.parse import urlencode, quote
 
 # check to see if we can get json, or if we're on app engine
 try:
     import json
 except:
     from django.utils import simplejson as json
+
+
+# helper functions
+def to_underscore(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def uncamelize(d):
+    drop = []
+
+    for k, v in d.items():
+        u = to_underscore(k)
+        if u != k and u not in d:
+            d[u] = v
+            drop.append(k)
+
+    for k in drop:
+        del d[k]
+
+    return d
+
+
+def as_bool(v):
+    if v == 0 or v is False:
+        return False
+    return True
+
+
+def as_datetime(v):
+    if isinstance(v, int):
+        return datetime.fromtimestamp(v)
+
+
+def process_person_info(parent, person_info, addresses):
+    try:
+        from contextIO2 import Contact
+    except ImportError:
+        from __init__ import Contact
+    contacts = {}
+    to_addrs = []
+    to_contacts = []
+    from_addr = None
+    from_contact = None
+
+    if addresses.has_key('to'):
+        for info in addresses['to']:
+            person_info[info.get('email')].setdefault('name', info.get('name'))
+            to_addrs.append(info.get('email'))
+
+    info = addresses['from']
+    person_info[info.get('email')].setdefault('name', info.get('name'))
+    from_addr = info.get('email')
+
+    for addr, d in person_info.items():
+        info = {
+            'email': addr,
+            'thumbnail': d.get('thumbnail'),
+            'name': d.get('name')
+        }
+        c = Contact(parent, info)
+        contacts.setdefault(addr, c)
+
+        if addr in to_addrs:
+            to_contacts.append(c)
+            to_addrs.remove(addr)
+
+        elif addr == from_addr:
+            from_contact = c
+
+    return contacts, to_contacts, from_contact
+
 
 class ArgumentError(Exception):
     """Class to handle bad arguments."""
@@ -113,7 +188,7 @@ class ContextIO(object):
                 )
             
             if self.debug == 'print':
-                print message
+                six.print_(message)
             elif self.debug == 'log':
                 logging.debug(message)
 

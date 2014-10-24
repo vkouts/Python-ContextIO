@@ -5,10 +5,10 @@ from setuptools import setup, find_packages
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.md')).read()
 
-requires=['rauth']
+requires=['rauth', 'six']
 
 setup(name='ContextIO v2.0 Client Library',
-    version='1.1.1',
+    version='1.2',
     description='Library for accessing the Context.IO API v2.0 in Python',
     long_description=README,
     author='Tony Blank, Jesse Dhillon',
