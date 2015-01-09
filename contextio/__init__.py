@@ -522,7 +522,16 @@ class Resource(object):
     
     def __init__(self, parent, base_uri, defn):
         """Constructor."""
-        defn = uncamelize(defn)
+
+        if defn == "":
+            logging.error('Empty response received for ' + base_uri + "")
+            return
+
+        try:
+            defn = uncamelize(defn)
+        except:
+            logging.error('Invalid response received for ' + base_uri + "")
+            return
 
         for k in self.__class__.keys:
             if k in defn:
