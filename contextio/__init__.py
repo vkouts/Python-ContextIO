@@ -1184,7 +1184,6 @@ class Account(Resource):
             A dictionary (see below for data structure)
         
             {
-                u'syncsQueued': STRING, 
                 u'syncs_queued': STRING, 
                 u'resource_url': STRING, 
                 u'success': BOOL
@@ -2311,7 +2310,6 @@ class Source(Resource):
             a dictionary, data format below
             
             {
-                'syncsQueued': LIST of syncs queued, 
                 'syncs_queued': LIST of syncs queued, 
                 'resource_url': STRING, complete url of resource, 
                 'success': BOOL, 
