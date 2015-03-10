@@ -382,19 +382,55 @@ class ContextIO(object):
             'accounts', method="POST", params=params
         ))
 
-    def get_connect_tokens(self):
+    def get_connect_tokens(self,**params):
         """Get a list of connect tokens created with your API key.
         
         Documentation: http://context.io/docs/2.0/connect_tokens#get
         
-        Arguments:
-            None
+        Optional Arguments:
+            token : string - The connect token used to create the account .
+            
+            Making the api call https://context.io/2.0/connect_tokens/<token_id>
+        
+        Returns(if token is given):
+
+        A dictionary : 
+
+
+        {
+          "token": stringId of the connect_token,
+          "email": stringemail address specified on token creation,
+          "created": numberUnix timestamp of the connect_token was created,
+          "used": numberUnix time this token was been used. 0 means it no account has been created with this token yet,
+          "expires": mixedUnix time this token will expire and be purged. Once the token is used, this property will be set to false,
+          "callback_url": stringURL of your app we'll redirect the browser to when the account is created,
+          "first_name": stringFirst name specified on token creation,
+          "last_name": stringLast name specified on token creation,
+          "account": {
+            If the connect_token hasn't been used yet, this object will be empty
+            "id": stringId of the account created with this token,
+            "created": numberUnix timestamp of account creation time,
+            "suspended": numberUnix timestamp of account suspension time 0 means not suspended,
+            "email_addresses":arrayArray of email addresses for this account. This only lists the actual addresses as strings.,
+            "first_name": stringFirst name of account holder,
+            "last_name": stringLast name of account holder,
+            "sources": arrayList of sources this account gets data from. See sources
+            If your key uses 3-legged signatures, the following 2 properties are added
+            "access_token": stringOAuth access token to sign all future requests on this account,
+            "access_token_secret": stringOAuth access token secret to sign all future requests on this account
+          }
+}
+
+        or 
         
         Returns:
             A list of ConnectToken objects.
         """
-        return [ConnectToken(self, obj) for obj in self._request_uri(
-            'connect_tokens'
+        if params:
+            return self._request_uri('connect_tokens'+'/'+params['token'])
+        else:
+            return [ConnectToken(self, obj) for obj in self._request_uri(
+                'connect_tokens'
         )]
 
     def post_connect_token(self, **params):
