@@ -1403,7 +1403,8 @@ class Account(Resource):
             'callback_url', 'failure_notif_url', 'filter_to', 'filter_from', 
             'filter_cc', 'filter_subject', 'filter_thread', 
             'filter_new_important', 'filter_file_name', 'filter_folder_added', 
-            'filter_folder_removed', 'include_body', 'body_type', 'sync_period'
+            'filter_folder_removed', 'include_body', 'body_type', 'sync_period',
+            'include_parsed_receipts'
         ]
         
         params = Resource.sanitize_params(params, all_args, req_args)
