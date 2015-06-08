@@ -359,6 +359,9 @@ class ContextIO(object):
             provider_token_secret: string - An OAuth token secret obtained 
                 from the IMAP account provider to be used to authentify on 
                 this email account.
+            provider_refresh_token: An OAuth2 refresh token obtained from the
+                IMAP account provider to be used to authentify on this email
+                account.
             provider_consumer_key: string - The OAuth consumer key used to 
                 obtain the the token and token secret above for that account. 
                 That consumer key and secret must be configured in your 
@@ -373,7 +376,8 @@ class ContextIO(object):
         all_args = ['email', 'first_name', 'last_name', 'server', 
             'username', 'use_ssl', 'port', 'type', 'sync_period', 
             'raw_file_list', 'password', 'provider_token', 
-            'provider_token_secret', 'provider_consumer_key', 'callback_url'
+            'provider_token_secret', 'provider_refresh_token',
+            'provider_consumer_key', 'callback_url'
         ]
         
         params = Resource.sanitize_params(params, all_args, req_args)
