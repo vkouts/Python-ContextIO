@@ -8,16 +8,17 @@ README = open(os.path.join(here, 'README.md')).read()
 requires=['rauth', 'six']
 
 setup(name='contextio',
+    packages = ['contextio'],
     version='1.2',
     description='Library for accessing the Context.IO API v2.0 in Python',
     long_description=README,
     author='Tony Blank, Jesse Dhillon',
     author_email='tony@context.io, jesse@deva0.net',
     url='http://context.io',
-    keywords=['contextIO', 'dokdok', 'imap', 'oauth'],
+    keywords=['contextIO', 'imap', 'oauth'],
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
-    download_url='https://github.com/contextio/Python-ContextIO/tarball/0.1',
+    download_url='https://github.com/contextio/Python-ContextIO/tarball/1.2',
 )
