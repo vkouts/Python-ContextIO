@@ -8,7 +8,6 @@ README = open(os.path.join(here, 'README.md')).read()
 requires=['rauth', 'six']
 
 setup(name='contextio',
-    packages = ['contextio'],
     version='1.2',
     description='Library for accessing the Context.IO API v2.0 in Python',
     long_description=README,
