@@ -330,7 +330,7 @@ class ContextIO(object):
         If adding a source in the same call:
         Required Arguments:
             server: string - Name of IP of the IMAP server, eg. imap.gmail.com
-            username: string - The username used to authentify an IMAP 
+            username: string - The username used to authenticate an IMAP 
                 connection. On some servers, this is the same thing as 
                 the primary email address.
             use_ssl: integer - Set to 1 if you want SSL encryption to 
@@ -354,7 +354,7 @@ class ContextIO(object):
             password: string - Password for authentication on the IMAP server. 
                 Ignored if any of the provider_* parameters are set below.
             provider_refresh_token: An OAuth2 refresh token obtained from the
-                IMAP account provider to be used to authentify on this email
+                IMAP account provider to be used to authenticate on this email
                 account.
             provider_consumer_key: string - The OAuth consumer key used to 
                 obtain the the token and token secret above for that account. 
@@ -1115,7 +1115,7 @@ class Account(Resource):
             email: string - The primary email address used to receive emails 
                 in this account
             server: string - Name of IP of the IMAP server, eg. imap.gmail.com
-            username: string - The username used to authentify an IMAP 
+            username: string - The username used to authenticate an IMAP 
                 connection. On some servers, this is the same thing as 
                 the primary email address.
             use_ssl: integer - Set to 1 if you want SSL encryption to 
@@ -1139,7 +1139,7 @@ class Account(Resource):
             password: string - Password for authentication on the IMAP server. 
                 Ignored if any of the provider_* parameters are set below.
             provider_refresh_token: An OAuth2 refresh token obtained from the
-                IMAP account provider to be used to authentify on this email
+                IMAP account provider to be used to authenticate on this email
                 account.
             provider_consumer_key: string - The OAuth consumer key used to 
                 obtain the the token and token secret above for that account. 
@@ -2175,7 +2175,7 @@ class Source(Resource):
     """Class to represent the Source resource.
     
     Properties:
-        username: string - The username used to authentify an IMAP connection. 
+        username: string - The username used to authenticate an IMAP connection. 
             On some servers, this is the same thing as the primary email 
             address.
         status: string - If the status of the source is TEMP_DISABLED or 
