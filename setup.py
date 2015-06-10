@@ -8,7 +8,7 @@ README = open(os.path.join(here, 'README.md')).read()
 requires=['rauth', 'six']
 
 setup(name='contextio',
-    version='1.2',
+    version='1.4',
     description='Library for accessing the Context.IO API v2.0 in Python',
     long_description=README,
     author='Tony Blank, Jesse Dhillon',
@@ -19,5 +19,5 @@ setup(name='contextio',
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
-    download_url='https://github.com/contextio/Python-ContextIO/tarball/1.2',
+    download_url='https://github.com/contextio/Python-ContextIO/tarball/1.4',
 )
