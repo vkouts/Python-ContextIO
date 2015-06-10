@@ -258,20 +258,21 @@ class ContextIO(object):
         """This method formats request errors and raises appropriate 
             exceptions."""
         response_json = response.json()
-        if 'code' in response_json and 'value' in response_json:
-            raise Exception(
-                'HTTP %s: %s' % (
-                    response_json['code'],
-                    response_json['value']
+        if isinstance(response_json, collections.Iterable):
+            if 'code' in response_json and 'value' in response_json:
+                raise Exception(
+                    'HTTP %s: %s' % (
+                        response_json['code'],
+                        response_json['value']
+                    )
                 )
-            )
-        elif 'type' in response_json and 'value' in response_json:
-            raise Exception(
-                '%s: %s' % (
-                    response_json['type'],
-                    response_json['value']
+            elif 'type' in response_json and 'value' in response_json:
+                raise Exception(
+                    '%s: %s' % (
+                        response_json['type'],
+                        response_json['value']
+                    )
                 )
-            )
         else:
             raise Exception(response.text)
 
