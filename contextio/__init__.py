@@ -38,6 +38,7 @@ message = Message(account, {'id': 'MESSAGE_ID'})
 import logging
 import re
 import six
+import collections
 
 from datetime import datetime
 from rauth import OAuth1Session
