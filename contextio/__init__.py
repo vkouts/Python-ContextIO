@@ -575,7 +575,8 @@ class Resource(object):
                 setattr(self, k, None)
 
         self.parent = parent
-        self.base_uri = quote(base_uri.format(**defn).encode('utf-8'))
+        unidict = {k.encode('utf8') if isinstance(k, basestring) else k: v.encode('utf8') if isinstance(v, basestring) else v for k, v in defn.items()}
+        self.base_uri = quote(base_uri.format(**unidict))
 
     def _uri_for(self, *elems):
         """Joins API endpoint elements and returns a string."""
