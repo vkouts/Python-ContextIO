@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 requires=['rauth', 'six']
 
 setup(name='contextio',
-    version='1.6.1',
+    version='1.6.2',
     description='Library for accessing the Context.IO API v2.0 in Python',
     author='Tony Blank, Jesse Dhillon',
     author_email='tony@context.io, jesse@deva0.net',
@@ -15,5 +15,5 @@ setup(name='contextio',
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
-    download_url='https://github.com/contextio/Python-ContextIO/tarball/1.6.1',
+    download_url='https://github.com/contextio/Python-ContextIO/tarball/1.6.2',
 )
