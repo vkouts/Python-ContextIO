@@ -29,6 +29,10 @@ Check out / download the module from git, change directory to the folder with se
 
 You'll probably want to toss a sudo before that, depending on your OS. That's it though!
 
+You can also use pip to install the latest release:
+
+	pip install contextio
+
 ##Usage
 You first need to instantiate the main ContextIO object with your API credentials:
 
