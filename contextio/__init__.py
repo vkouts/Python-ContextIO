@@ -34,6 +34,7 @@ account object as the parent.
 
 message = Message(account, {'id': 'MESSAGE_ID'})
 """
+from __future__ import absolute_import
 
 import logging
 import re
@@ -64,7 +65,7 @@ def to_underscore(name):
 def uncamelize(d):
     drop = []
 
-    for k, v in d.items():
+    for k, v in list(d.items()):
         u = to_underscore(k)
         if u != k and u not in d:
             d[u] = v
@@ -91,14 +92,14 @@ def process_person_info(parent, person_info, addresses):
     try:
         from contextIO2 import Contact
     except ImportError:
-        from __init__ import Contact
+        from .__init__ import Contact
     contacts = {}
     to_addrs = []
     to_contacts = []
     from_addr = None
     from_contact = None
 
-    if addresses.has_key('to'):
+    if 'to' in addresses:
         for info in addresses['to']:
             person_info[info.get('email')].setdefault('name', info.get('name'))
             to_addrs.append(info.get('email'))
@@ -107,7 +108,7 @@ def process_person_info(parent, person_info, addresses):
     person_info[info.get('email')].setdefault('name', info.get('name'))
     from_addr = info.get('email')
 
-    for addr, d in person_info.items():
+    for addr, d in list(person_info.items()):
         info = {
             'email': addr,
             'thumbnail': d.get('thumbnail'),
@@ -590,7 +591,7 @@ class Resource(object):
                 setattr(self, k, None)
 
         self.parent = parent
-        unidict = {k.encode('utf8') if isinstance(k, basestring) else k: v.encode('utf8') if isinstance(v, basestring) else v for k, v in defn.items()}
+        unidict = {k.encode('utf8') if isinstance(k, six.string_types) else k: v.encode('utf8') if isinstance(v, six.string_types) else v for k, v in list(defn.items())}
         self.base_uri = quote(base_uri.format(**unidict))
 
     def _uri_for(self, *elems):
