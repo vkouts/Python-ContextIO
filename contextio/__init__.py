@@ -324,6 +324,8 @@ class ContextIO(object):
 
         Required Arguments:
             email: string - The primary email address of the account holder.
+            migrate_account_id: string - Existing user_id (from lite) you want 
+                to migrate to 2.0. Either migrate_account_id or email must be specified
 
         Optional Arguments:
             first_name: string - First name of the account holder.
@@ -345,10 +347,19 @@ class ContextIO(object):
             type: string - Currently, the only supported type is IMAP
 
         Optional Arguments:
-            sync_period: string - Sets the period at which the Context.IO
-                index for this source is synced with the origin email
-                account on the IMAP server. Possible values are 1h, 4h, 12h
-                and 24h (default).
+            origin_ip: string - IP address of the end user requesting the account 
+                to be created
+            expunge_on_deleted_flag: integer - By default, we don't filter out messages 
+                flagged as deleted. Set this parameter to 1 to turn on this filtering.
+            sync_all_folders: integer - By default, we filter out some folders like 
+                'Deleted Items' and 'Drafts'. Set this parameter to 1 to turn off this 
+                filtering and show every single folder.
+            sync_folders: string - By default, we filter out some folders like 
+                'Deleted Items' and 'Drafts'. Set this parameter to 
+                'All,Trash' to show the 'Deleted Items' folder.
+            sync_flags:  integer By default, we don't synchronize IMAP flags. 
+                Set this parameter to 1 to turn on IMAP flag syncing for the 'seen' and 
+                'flagged' flags.
             raw_file_list: integer - By default, we filter out files like
                 signature images or those winmail.dat files form the files
                 list. Set this parameter to 1 to turn off this filtering and
@@ -364,15 +375,17 @@ class ContextIO(object):
                 Context.IO account.
             callback_url: string (url) - If specified, we'll make a POST
                 request to this URL when the initial sync is completed.
+            status_callback_url: string (url) - If specified, we'll make a POST 
+                request to this URL if the connection status of the source changes.
 
         Returns:
             An Account object
         """
         req_args = ['email', ]
-        all_args = ['email', 'first_name', 'last_name', 'server',
-            'username', 'use_ssl', 'port', 'type', 'sync_period',
-            'raw_file_list', 'password', 'provider_refresh_token',
-            'provider_consumer_key', 'callback_url'
+        all_args = ['email', 'migrate_account_id', 'first_name', 'last_name', 'server',
+            'username', 'use_ssl', 'port', 'type', 'origin_ip', 'expunge_on_deleted_flag',
+            'sync_all_folders', 'sync_folders', 'sync_flags', 'raw_file_list', 'password', 
+            'provider_refresh_token', 'provider_consumer_key', 'callback_url', 'status_callback_url'
         ]
 
         params = Resource.sanitize_params(params, all_args, req_args)
@@ -465,6 +478,8 @@ class ContextIO(object):
                 like signature images from the files list. Set this parameter
                 to 1 to turn off this filtering and show every single file
                 attachment.
+            status_callback_url: string (url) - If specified, we'll make a POST 
+                request to this URL if the connection status of the source changes.
 
         Returns:
             A dictionary, data format below
@@ -483,7 +498,7 @@ class ContextIO(object):
         all_args = [
             'callback_url', 'email', 'first_name', 'last_name',
             'source_callback_url', 'source_sync_all_folders',
-            'source_sync_flags', 'source_raw_file_list'
+            'source_sync_flags', 'source_raw_file_list', 'status_callback_url'
         ]
 
         params = Resource.sanitize_params(params, all_args, req_args)
@@ -664,14 +679,11 @@ class Account(Resource):
         password_expired: integer (unix timestamp) - user's password
             expiration. 0 means still valid
         sources: list - email accounts where this account gets data from
-        nb_messages: integer - Total number of messages in all sources of
-            this account
-        nb_files: integer - Total number of files in all sources of this
-            account
+        resource_url: string - URI which identifies this account
     """
     keys = ['id', 'username', 'created', 'suspended', 'email_addresses',
         'first_name', 'last_name', 'password_expired', 'sources',
-        'nb_messages', 'nb_files']
+        'resource_url']
 
     def __init__(self, parent, defn):
         """Constructor.
@@ -793,6 +805,8 @@ class Account(Resource):
                 like signature images from the files list. Set this parameter
                 to 1 to turn off this filtering and show every single file
                 attachment.
+            status_callback_url: string (url) - If specified, we'll make a POST 
+                request to this URL if the connection status of the source changes.
 
         Returns:
             A dictionary (data format below)
@@ -810,7 +824,7 @@ class Account(Resource):
         req_args = ['callback_url', ]
         all_args = ['callback_url', 'email', 'first_name', 'last_name',
             'source_callback_url', 'source_sync_all_folders',
-            'source_sync_flags', 'source_raw_file_list'
+            'source_sync_flags', 'source_raw_file_list', 'status_callback_url'
         ]
 
         params = Resource.sanitize_params(params, all_args, req_args)
@@ -831,6 +845,10 @@ class Account(Resource):
             active_after: integer (unix time) - Only include contacts included
                 in at least one email dated after a given time. This parameter
                 should be a standard unix timestamp
+            sort_by: string - The field by which to sort the returned results. 
+                Possible values are email, count, received_count and sent_count
+            sort_order: string - The sort order of the returned results. 
+                Possible values are asc and desc
             limit: integer - The maximum number of results to return.
             offset: integer - Start the list at this offset (zero-based).
 
@@ -904,6 +922,8 @@ class Account(Resource):
                 leading / and trailing /. For example, *.pdf would give you
                 all PDF files while /\.jpe?g$/ would return all files whose
                 name ends with .jpg or .jpeg
+            file_size_min: integer - Search for files based on their size (in bytes).
+            file_size_max: integer - Search for files based on their size (in bytes).
             email: string - Email address of the contact for whom you want the
                 latest files exchanged with. By "exchanged with contact X" we
                 mean any email received from contact X, sent to contact X or
@@ -929,12 +949,7 @@ class Account(Resource):
                 to messages indexed after a given timestamp. This is not the
                 same as the date of the email, it is the time Context.IO
                 indexed this message.
-            group_by_revisions: integer - If set to 1, the list will do an
-                intelligent grouping of files to reflect occurrences of the
-                same document. The grouping algorithm is exactly the same as
-                the one used to get file revisions but only the occurrences
-                matching the filters applied to the list will be included in
-                the results.
+            source: string - Filter messages by the account source label.
             sort_order: string - The sort order of the returned results.
                 Possible values are asc and desc
             limit: integer - The maximum number of results to return.
@@ -944,9 +959,10 @@ class Account(Resource):
             A list of File objects
         """
         all_args = [
-            'file_name', 'name', 'email', 'to', 'from', 'cc', 'bcc',
+            'file_name', 'file_size_min', 'file_size_max', 'email', 
+            'to', 'from', 'cc', 'bcc',
             'date_before', 'date_after', 'indexed_before', 'indexed_after',
-            'group_by_revisions', 'limit', 'offset'
+            'source', 'limit', 'offset'
         ]
 
         params = Resource.sanitize_params(params, all_args)
@@ -989,12 +1005,15 @@ class Account(Resource):
                 used to refer to special use folders in a language-independant
                 way. See http://code.google.com/apis/gmail/imap/#xlist
                 (Gmail specific) and RFC-6154.
+            source: string - Filter messages by the account source label.
             file_name: string - Search for files based on their name. You can
                 filter names using typical shell wildcards such as *, ? and []
                 or regular expressions by enclosing the search expression in a
                 leading / and trailing /. For example, *.pdf would give you
                 all PDF files while /\.jpe?g$/ would return all files whose
                 name ends with .jpg or .jpeg
+            file_size_min: integer - Search for files based on their size (in bytes).
+            file_size_max: integer - Search for files based on their size (in bytes).
             date_before: integer (unix time) - Only include messages before a
                 given timestamp. The value this filter is applied to is the
                 Date: header of the message which refers to the time the
@@ -1010,6 +1029,7 @@ class Account(Resource):
             indexed_after: integer (unix time) - Only include messages indexed
                 after a given timestamp. This is not the same as the date of
                 the email, it is the time Context.IO indexed this message.
+            include_thread_size: integer - Set to 1 to include thread size in the result.
             include_body: integer - Set to 1 to include message bodies in the
                 result. Since message bodies must be retrieved from the IMAP
                 server, expect a performance hit when setting this parameter.
@@ -1025,6 +1045,9 @@ class Account(Resource):
                 this parameter.
             body_type: string - Used when include_body is set to get only body
                 parts of a given MIME-type (for example text/html)
+            include_source: integer - Set to 1 to include message sources in the 
+                result. Since message sources must be retrieved from the IMAP server, 
+                expect a performance hit when setting this parameter.
             sort_order: string - The sort order of the returned results.
                 Possible values are asc and desc
             limit: integer - The maximum number of results to return.
@@ -1035,7 +1058,8 @@ class Account(Resource):
         """
         all_args = ['subject', 'email', 'to',
             'sender', 'from_', 'cc', 'bcc', 'folder', 'date_before', 'date_after',
-            'indexed_before', 'indexed_after', 'include_body', 'file_name',
+            'indexed_before', 'indexed_after', 'include_thread_size', 'include_body', 'source', 
+            'file_name', 'file_size_min', 'file_size_max', 'include_source',
             'include_headers', 'include_flags', 'body_type', 'sort_order',
             'limit', 'offset'
         ]
@@ -1071,13 +1095,28 @@ class Account(Resource):
                 there is what we expect to receive here. Hint: you can get
                 this with the accounts/messages/source call.
 
+        Optional Arguments:
+            flag_seen: integer - Message has been read. Set this parameter 
+                to 1 to set the flag, 0 to unset it.
+            flag_answered: integer - Message has been answered. Set this 
+                parameter to 1 to set the flag, 0 to unset it.
+            flag_flagged: integer - Message is "flagged" for urgent/special 
+                attention. Set this parameter to 1 to set the flag, 0 to unset it.
+            flag_deleted: integer - Message is "deleted" for later removal. 
+                An alternative way of deleting messages is to move it to the Trash folder. 
+                Set this parameter to 1 to set the flag, 0 to unset it.
+            flag_draft: integer - Message has not completed composition (marked as a draft). 
+                Set this parameter to 1 to set the flag, 0 to unset it.
+
         Returns:
             Bool
         """
         headers = {'Content-Type': 'multipart/form-data'}
 
         req_args = ['dst_source', 'dst_folder', 'message']
-        all_args = ['dst_source', 'dst_folder', 'message']
+        all_args = ['dst_source', 'dst_folder', 'message',
+            'flag_seen', 'flag_answered', 'flag_flagged', 'flag_deleted', 'flag_draft'
+        ]
 
         params = Resource.sanitize_params(params, all_args, req_args)
 
@@ -1131,10 +1170,19 @@ class Account(Resource):
             type: string - Currently, the only supported type is IMAP
 
         Optional Arguments:
-            sync_period: string - Sets the period at which the Context.IO
-                index for this source is synced with the origin email
-                account on the IMAP server. Possible values are 1h, 4h, 12h
-                and 24h (default).
+            origin_ip: string - IP address of the end user requesting the account 
+                to be created
+            expunge_on_deleted_flag: integer - By default, we don't filter out messages 
+                flagged as deleted. Set this parameter to 1 to turn on this filtering.
+            sync_all_folders: integer - By default, we filter out some folders like 
+                'Deleted Items' and 'Drafts'. Set this parameter to 1 to turn off this 
+                filtering and show every single folder.
+            sync_folders: string - By default, we filter out some folders like 
+                'Deleted Items' and 'Drafts'. Set this parameter to 
+                'All,Trash' to show the 'Deleted Items' folder.
+            sync_flags:  integer By default, we don't synchronize IMAP flags. 
+                Set this parameter to 1 to turn on IMAP flag syncing for the 'seen' and 
+                'flagged' flags.
             raw_file_list: integer - By default, we filter out files like
                 signature images or those winmail.dat files form the files
                 list. Set this parameter to 1 to turn off this filtering and
@@ -1150,9 +1198,8 @@ class Account(Resource):
                 Context.IO account.
             callback_url: string (url) - If specified, we'll make a POST
                 request to this URL when the initial sync is completed.
-            sync_all_folders: integer - By default, we filter out some folders
-                like 'Deleted Items' and 'Drafts'. Set this parameter to 1
-                to turn off this filtering and show every single folder.
+            status_callback_url: string (url) - If specified, we'll make a POST 
+                request to this URL if the connection status of the source changes.
 
         Returns:
             A mostly empty Source object or False if something failed.
@@ -1168,9 +1215,10 @@ class Account(Resource):
         req_args = ['email', 'server', 'username', 'port', 'type', 'use_ssl']
         all_args = [
             'email', 'server', 'username', 'port', 'type', 'use_ssl',
-            'sync_period', 'raw_file_list', 'password',
+            'origin_ip', 'expunge_on_deleted_flag', 'sync_all_folders', 
+            'sync_folders', 'sync_flags', 'raw_file_list', 'password',
             'provider_refresh_token', 'provider_consumer_key',
-            'callback_url', 'sync_all_folders'
+            'callback_url', 'status_callback_url'
         ]
         params = Resource.sanitize_params(params, all_args, req_args)
 
@@ -1365,9 +1413,6 @@ class Account(Resource):
                 whose name matches the given string is attached. Supports
                 wildcards and regular expressions like the file_name parameter
                 of the files list call.
-            filter_file_revisions: string - Check for new message where a new
-                revision of a given file is attached. The value should be a
-                file_id, see getting file revisions for more info.
             filter_folder_added: string - Check for messages filed in a given
                 folder. On Gmail, this is equivalent to having a label applied
                 to a message. The value should be the complete name (including
@@ -1377,19 +1422,15 @@ class Account(Resource):
                 removed from a message. The value should be the complete name
                 (including parents if applicable) of the folder you want to
                 track.
+            filter_to_domain: string - Check for new messages sent to a given 
+                domain. Also accepts a comma delimited list of domains.
+            filter_from_domain: string - Check for new messages sent from a given 
+                domain. Also accepts a comma delimited list of domains.
             include_body: integer - Set to 1 to include the message body in
                 the result. Since the body must be retrieved from the IMAP
                 server, expect a performance hit when setting this parameter.
             body_type: string - Used when include_body is set to get only body
                 parts of a given MIME-type (for example text/html)
-            sync_period: string - Desired maximum delay between the moment the
-                email comes in the user's mailbox and the time we call the
-                callback_url. To have your callback_url called as soon as
-                possible (typically, this means within a minute after the
-                event occurred in the mailbox), set this parameter to
-                immediate or 0. Other possible values are 30m, 1h, 4h, 12h and
-                24h (default) meaning 30 minutes, 1 hour, 4 hours, 12 hours
-                and 24 hours respectively.
 
         Returns:
             A mostly empty WebHook object if successful, or False
@@ -1399,8 +1440,8 @@ class Account(Resource):
             'callback_url', 'failure_notif_url', 'filter_to', 'filter_from',
             'filter_cc', 'filter_subject', 'filter_thread',
             'filter_new_important', 'filter_file_name', 'filter_folder_added',
-            'filter_folder_removed', 'include_body', 'body_type', 'sync_period',
-            'include_parsed_receipts'
+            'filter_folder_removed', 'filter_to_domain', 'filter_from_domain', 
+            'include_body', 'body_type', 'include_parsed_receipts'
         ]
 
         params = Resource.sanitize_params(params, all_args, req_args)
@@ -1427,10 +1468,14 @@ class Contact(Resource):
             received
         last_sent: integer - Unix timestamp of date the last message was sent
         count: integer - Number of emails exchanged with this contact
+        sent_count: integer - number of messages that include the contact in To, CC, or BCC
+        received_count: integer - number of messages that include the contact in From
+        sent_from_account_count: integer - number of messages that include the contact in 
+            To, CC, or BCC and an email from this account in From
         email: string (email) - one of the contact's email addresses
     """
     keys = ['emails', 'name', 'thumbnail', 'last_received', 'last_sent',
-        'count', 'email']
+        'count', 'sent_count', 'received_count', 'sent_from_account_count', 'email']
 
     def __init__(self, parent, defn):
         """Constructor.
@@ -1665,16 +1710,12 @@ class File(Resource):
             (only present if source is a Gmail account)
         gmail_thread_id: string - Gmail thread id the file is attached to
             (only present if source is a Gmail account)
-        similarity: float - only present when using the related call -
-            similarity factor of the file's name.
-        supports_diff: bool - only present when using the revisions call -
-            whether or not the file changes with this file can be obtained
         """
     keys = ['size', 'type', 'subject', 'date', 'date_indexed', 'addresses',
         'person_info', 'file_name', 'file_name_structure', 'body_section',
         'file_id', 'supports_preview', 'is_embedded', 'content_disposition',
         'content_id', 'message_id', 'email_message_id', 'gmail_message_id',
-        'gmail_thread_id', 'similarity', 'supports_diff']
+        'gmail_thread_id']
 
     def __init__(self, parent, defn):
         """Constructor.
@@ -1737,19 +1778,6 @@ class File(Resource):
         """
         return [File(self, obj) for obj in self._request_uri('related')]
 
-    def get_revisions(self):
-        """Get list of other revisions of a given file.
-
-        Documentation: http://context.io/docs/2.0/accounts/files/revisions#get
-
-        Arguments:
-            None
-
-        Returns:
-            A list of File objects.
-        """
-        return [File(self, obj) for obj in self._request_uri('revisions')]
-
 
 class Message(Resource):
     """Class to represent the Message resource.
@@ -1775,14 +1803,10 @@ class Message(Resource):
         body: list of dicts - Each dict represents a MIME part.
         flags: dict - the flags for this message
         folders: dict - the folders this message is in
-        source: string - the raw email source
-        thread: Thread object - the thread this message is in, includes other
-            messages in the thread
     """
     keys = ['date', 'date_indexed', 'addresses', 'person_info',
         'email_message_id', 'message_id', 'gmail_message_id',
-        'gmail_thread_id', 'files', 'subject', 'folders', 'sources',
-        'list_headers', 'facebook_headers']
+        'gmail_thread_id', 'files', 'subject', 'folders', 'sources']
 
     # set empty properties that will get populated by the get methods
     body = None
@@ -1820,6 +1844,7 @@ class Message(Resource):
         Documentation: http://context.io/docs/2.0/accounts/messages#id-get
 
         Optional Arguments:
+            include_thread_size: integer - Set to 1 to include thread size in the result.
             include_body: integer - Set to 1 to include the message body in
                 the result. Since the body must be retrieved from the IMAP
                 server, expect a performance hit when setting this parameter.
@@ -1835,12 +1860,15 @@ class Message(Resource):
                 this parameter.
             body_type: string - Used when include_body is set to get only body
                 parts of a given MIME-type (for example text/html)
+            include_source: integer - Set to 1 to include message sources in the 
+                result. Since message sources must be retrieved from the IMAP 
+                server, expect a performance hit when setting this parameter.
 
         Returns:
             True if self is updated, else will throw a request error
         """
-        all_args = ['include_body', 'include_headers', 'include_flags',
-            'body_type']
+        all_args = ['include_thread_size', 'include_body', 'include_headers', 
+            'include_flags', 'body_type', 'include_source']
         params = Resource.sanitize_params(params, all_args)
 
         self.__init__(self.parent, self._request_uri('', params=params))
@@ -1865,13 +1893,17 @@ class Message(Resource):
             move: integer - By default, this calls copies the original message
                 in the destination. Set this parameter to 1 to move instead of
                 copy.
-            dst_label: string - if copying between sources, you MUST use this
-                parameter to identify the source you want to move/copy the
-                message to
-            return_bool: bool - True by default. If set to false, returns a
-                dict that includes "connection_log" which contains additional
-                info from the IMAP server if the call failed.
-
+            flag_seen: integer - Message has been read. Set this parameter to 
+                1 to set the flag, 0 to unset it.
+            flag_answered: integer - Message has been answered. Set this parameter 
+                to 1 to set the flag, 0 to unset it.
+            flag_flagged: integer - Message is "flagged" for urgent/special attention. 
+                Set this parameter to 1 to set the flag, 0 to unset it.
+            flag_deleted: integer - Message is "deleted" for later removal. An 
+                alternative way of deleting messages is to move it to the Trash 
+                folder. Set this parameter to 1 to set the flag, 0 to unset it.
+            flag_draft: integer - Message has not completed composition (marked as 
+                a draft). Set this parameter to 1 to set the flag, 0 to unset it.
         Returns:
             Bool, unless return_bool parameter is set to False, then returns
                 dict
@@ -1885,7 +1917,8 @@ class Message(Resource):
             return_bool = True
 
         req_args = ['dst_folder', ]
-        all_args = ['dst_folder', 'dst_source', 'move', 'dst_label']
+        all_args = ['dst_folder', 'dst_source', 'move', 'flag_seen',
+        'flag_answered', 'flag_flagged', 'flag_deleted', 'flag_draft']
         params = Resource.sanitize_params(params, all_args, req_args)
 
         status = self._request_uri('', method='POST', params=params)
@@ -2186,29 +2219,21 @@ class Source(Resource):
             address.
         status: string - If the status of the source is TEMP_DISABLED or
             DISABLED. You can do a POST/PUT with status set to 1 to reset it.
-        service_level: string - Changes the service level for the source.
-            Possible values are PRO and BASIC.
         type: string - Currently, the only supported type is IMAP
         label: string - The label property of the source instance. You can use
             0 as an alias for the first source of an account.
-        authentication_type: string - what method was used to authenticate the
-            source.
         use_ssl: integer - Set to 1 if you want SSL encryption to be used when
             opening connections to the IMAP server. Any other value will be
             considered as "do not use SSL"
         resource_url: string (url) - Complete url of the source.
         server: string - Name of IP of the IMAP server, eg. imap.gmail.com
-        sync_period: string - Changes the period at which the Context.IO index
-            for this source is synced with the origin email account on the
-            IMAP server. Possible values are 1h, 4h, 12h and 24h (default).
         port: integer - Port number to connect to on the server. Keep in mind
             that most IMAP servers will have one port for standard connection
             and another one for encrypted connection (see use-ssl parameter
             above)
     """
-    keys = ['username', 'status', 'service_level', 'type', 'label',
-        'authentication_type', 'use_ssl', 'resource_url', 'server',
-        'sync_period', 'port'
+    keys = ['username', 'status', 'type', 'label',
+        'use_ssl', 'resource_url', 'server', 'port'
     ]
 
     def __init__(self, parent, defn):
@@ -2252,39 +2277,47 @@ class Source(Resource):
 
     def post(self, **params):
         """Update a data source for an account.
-
+        
         Documentation: http://context.io/docs/2.0/accounts/sources#id-post
-
+        
         Optional Arguments:
-            status: integer - If the status of the source is TEMP_DISABLED or
-                DISABLED. You can do a POST/PUT with status set to 1 to reset
+            status: integer - If the status of the source is TEMP_DISABLED or 
+                DISABLED. You can do a POST/PUT with status set to 1 to reset 
                 it.
-            force_status_check: integer - Creates an IMAP connection and
+            force_status_check: integer - Creates an IMAP connection and 
                 resets the source status to to one reported by the IMAP
                 backend. Don't combine this with other parameters.
-            sync_period: string - Changes the period at which the Context.IO
-                index for this source is synced with the origin email account
-                on the IMAP server. Possible values are 1h, 4h, 12h and 24h
-                (default).
-            password: string - New password for this source. Ignored if any of
+            sync_all_folders: integer - By default, we filter out some folders 
+                like 'Deleted Items' and 'Drafts'. Set this parameter to 1 to 
+                turn off this filtering and show every single folder.
+            expunge_on_deleted_flag: integer - By default, we don't filter out 
+                messages flagged as deleted. Set this parameter to 1 to turn on 
+                this filtering.
+            password: string - New password for this source. Ignored if any of 
                 the provider_* parameters are set below.
-            provider_refresh_token: An OAuth2 refresh token obtained from the IMAP
+            provider_refresh_token: An OAuth2 refresh token obtained from the IMAP 
                 account provider to authenticate this email account.
-            provider_consumer_key: string - The OAuth consumer key used to
-                obtain the the token and token secret above for that account.
-                That consumer key and secret must be configured in your
+            provider_consumer_key: string - The OAuth consumer key used to 
+                obtain the the token and token secret above for that account. 
+                That consumer key and secret must be configured in your 
                 Context.IO account
-
+            status_callback_url: string - If specified, we'll make a POST request 
+                to this URL if the connection status of the source changes.
+        
         Returns:
             Bool
         """
-        all_args = ['status', 'force_status_check', 'sync_period',
-            'password', 'provider_refresh_token', 'provider_consumer_key'
+        all_args = ['status', 'force_status_check', 'sync_all_folders', 
+            'expunge_on_deleted_flag', 'password', 'provider_refresh_token', 
+            'provider_consumer_key', 'status_callback_url'
         ]
         params = Resource.sanitize_params(params, all_args)
-
+        
         status = self._request_uri('', method='POST', params=params)
-        return bool(status['success'])
+        if 'force_status_check' in params:
+            return bool(status['status'])
+        else:
+            return bool(status['success'])
 
     def get_folders(self, **params):
         """Get list of folders in an IMAP source.
@@ -2532,6 +2565,8 @@ class Folder(Resource):
             http://context.io/docs/2.0/accounts/sources/folders/messages#get
 
         Optional Arguments:
+            include_thread_size: integer - Set to 1 to include thread size in 
+                the result.
             include_body: integer - Set to 1 to include message bodies in the
                 result. Since message bodies must be retrieved from the IMAP
                 server, expect a performance hit when setting this parameter.
@@ -2556,7 +2591,7 @@ class Folder(Resource):
         Returns:
             a list of Message objects.
         """
-        all_args = ['include_body',
+        all_args = ['include_thread_size', 'include_body', 
             'body_type', 'include_headers', 'include_flags', 'flag_seen',
             'limit', 'offset'
         ]
@@ -2657,9 +2692,6 @@ class WebHook(Resource):
             the account and gave up after a couple retries. The
             failure_notif_url is called when a webhook's failure
             property becomes true.
-        sync_period: string - Maximum time allowed between the event
-            happening in the mailbox and your callback_url being
-            called
         webhook_id: string - Id of the webhook
         filter_to: string - Check for new messages sent to a given name or
             email address.
@@ -2684,9 +2716,6 @@ class WebHook(Resource):
             whose name matches the given string is attached. Supports
             wildcards and regular expressions like the file_name parameter
             of the files list call.
-        filter_file_revisions: string - Check for new message where a new
-            revision of a given file is attached. The value should be a
-            file_id, see getting file revisions for more info.
         filter_folder_added: string - Check for messages filed in a given
             folder. On Gmail, this is equivalent to having a label applied
             to a message. The value should be the complete name (including
@@ -2696,12 +2725,16 @@ class WebHook(Resource):
             removed from a message. The value should be the complete name
             (including parents if applicable) of the folder you want to
             track.
+        filter_to_domain: string - Check for new messages sent to a given 
+            domain. Also accepts a comma delimited list of domains.
+        filter_from_domain: string - Check for new messages sent from a given 
+            domain. Also accepts a comma delimited list of domains.
     """
     keys = ['callback_url', 'failure_notif_url', 'active', 'failure',
-        'sync_period', 'webhook_id', 'filter_to', 'filter_from', 'filter_cc',
+        'webhook_id', 'filter_to', 'filter_from', 'filter_cc',
         'filter_subject', 'filter_thread', 'filter_new_important',
-        'filter_file_name', 'filter_file_revisions', 'filter_folder_added',
-        'filter_folder_removed'
+        'filter_file_name', 'filter_folder_added', 'filter_folder_removed',
+        'filter_to_domain', 'filter_from_domain'
     ]
 
     def __init__(self, parent, defn):
