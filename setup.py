@@ -15,5 +15,5 @@ setup(name='contextio',
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
-    download_url='https://github.com/contextio/Python-ContextIO/tarball/1.6.3',
+    download_url='https://github.com/contextio/Python-ContextIO/tarball/1.7',
 )
