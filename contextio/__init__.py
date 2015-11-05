@@ -261,22 +261,25 @@ class ContextIO(object):
             exceptions."""
         response_json = response.json()
         if isinstance(response_json, collections.Iterable):
-            if 'code' in response_json and 'value' in response_json:
+            if 'feedback_code' in response_json:
                 raise Exception(
                     'HTTP %s: %s' % (
-                        response_json['code'],
-                        response_json['value']
+                        response.status_code,
+                        response_json['feedback_code']
                     )
                 )
-            elif 'type' in response_json and 'value' in response_json:
+            else:
                 raise Exception(
-                    '%s: %s' % (
-                        response_json['type'],
-                        response_json['value']
+                    'HTTP %s' % (
+                        response.status_code
                     )
                 )
         else:
-            raise Exception(response.text)
+            raise Exception(
+                'HTTP %s' % (
+                    response.status_code
+                )
+            )
 
     def get_accounts(self, **params):
         """List of Accounts.
@@ -549,7 +552,7 @@ class ContextIO(object):
         """Add a new OAuth provider.
 
         Required Arguments:
-            type: string - 	Identification of the OAuth provider. This must be
+            type: string -  Identification of the OAuth provider. This must be
                 either GMAIL and GOOGLEAPPSMARKETPLACE.
             provider_consumer_key: string - The OAuth consumer key
             provider_consumer_secret: string - The OAuth consumer secret
@@ -1224,9 +1227,8 @@ class Account(Resource):
         params = Resource.sanitize_params(params, all_args, req_args)
 
         data = self._request_uri('sources', method='POST', params=params)
-        status = bool(data['success'])
-
-        if status:
+        if data is not None:
+            status = bool(data['success'])
             return Source(self, {'label': data['label']})
         else:
             return False
