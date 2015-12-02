@@ -3,10 +3,12 @@ Context.IO API v2.0 Python Library
 
 This is the python client library for v2.0 of the Context.IO API!
 
+Supports Python 2.7 and 3.
+
 ##Dependencies
 RAUTH - If you do not have that, snag it with
 ```$ pip install rauth```
-or 
+or
 ```$ easy_install rauth```
 , or “Use the [Source](https://github.com/litl/rauth), Luke”
 
@@ -37,12 +39,12 @@ You can also use pip to install the latest release:
 You first need to instantiate the main ContextIO object with your API credentials:
 
 	import contextio as c
-    
+
 	CONSUMER_KEY = 'YOUR_API_KEY'
 	CONSUMER_SECRET = 'YOUR_API_SECRET'
-    
+
 	context_io = c.ContextIO(
-		consumer_key=CONSUMER_KEY, 
+		consumer_key=CONSUMER_KEY,
 		consumer_secret=CONSUMER_SECRET
 	)
 
@@ -81,4 +83,4 @@ You can use this same technique to populate sub-resource objects too.
 
 Notice how the Message class needs an Account object as a parent? That's because the library uses an object's ancestors to build the URL.
 
-If you have any questions, don't hesitate to contact tony@context.io (that's me!). I'd love to assist you with any issues you encounter and learn how you'll use Context.IO!
+If you have any questions, don't hesitate to contact support@context.io.
