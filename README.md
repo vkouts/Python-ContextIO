@@ -83,4 +83,4 @@ You can use this same technique to populate sub-resource objects too.
 
 Notice how the Message class needs an Account object as a parent? That's because the library uses an object's ancestors to build the URL.
 
-If you have any questions, don't hesitate to contact support@context.io.
+If you have any questions, don't hesitate to contact support@context.io
