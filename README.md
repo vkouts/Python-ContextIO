@@ -3,7 +3,7 @@ Context.IO API v2.0 Python Library
 
 This is the python client library for v2.0 of the Context.IO API!
 
-Supports Python 2.7 and 3.
+Supports Python 2.7 (2.7.9 and up) and 3.
 
 ##Dependencies
 RAUTH - If you do not have that, snag it with
