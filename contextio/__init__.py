@@ -594,7 +594,7 @@ class Resource(object):
                 setattr(self, k, None)
 
         self.parent = parent
-        unidict = {k.encode('utf8') if isinstance(k, six.string_types) else k: v.encode('utf8') if isinstance(v, six.string_types) else v for k, v in list(defn.items())}
+        unidict = {six.text_type(k): six.text_type(v) for k, v in defn.items()}
         self.base_uri = quote(base_uri.format(**unidict))
 
     def _uri_for(self, *elems):
