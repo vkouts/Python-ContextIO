@@ -445,9 +445,7 @@ class ContextIO(object):
         if params:
             return self._request_uri('connect_tokens'+'/'+params['token'])
         else:
-            return [ConnectToken(self, obj) for obj in self._request_uri(
-                'connect_tokens'
-        )]
+            return [ConnectToken(self, obj) for obj in self._request_uri('connect_tokens')]
 
     def post_connect_token(self, **params):
         """Obtain a new connect token.
@@ -770,9 +768,7 @@ class Account(Resource):
         Returns:
             A list of ConnectToken objects
         """
-        return [ConnectToken(self, obj) for obj in self._request_uri(
-            'connect_tokens'
-        )]
+        return [ConnectToken(self, obj) for obj in self._request_uri('connect_tokens')]
 
     def post_connect_token(self, **params):
         """Obtain a new connect_token for a specific account.
@@ -2322,6 +2318,79 @@ class Source(Resource):
         else:
             return bool(status['success'])
 
+    def delete_connect_token(self, token_id):
+        """Removes a connect token created for an IMAP source.
+
+        Documentation: http://context.io/docs/2.0/accounts/sources/connect_tokens#delete
+
+        Arguments: None
+
+        Returns:
+            A single ConnectToken object
+        """
+
+        return self._request_uri("connect_tokens/{0}".format(token_id), method="DELETE")
+
+    def get_connect_token(self, token_id):
+        """Retrieve a single connect token created for an IMAP source.
+
+        Documentation: http://context.io/docs/2.0/accounts/sources/connect_tokens#get
+
+        Arguments: None
+
+        Returns:
+            A single ConnectToken object
+        """
+
+        return ConnectToken(self, self._request_uri("connect_tokens/{0}".format(token_id)))
+
+    def get_connect_tokens(self):
+        """List of connect tokens created for an IMAP source.
+
+        Documentation: http://context.io/docs/2.0/accounts/sources/connect_tokens#get
+
+        Arguments: None
+
+        Returns:
+            A list of ConnectToken objects
+        """
+        return [ConnectToken(self, obj) for obj in self._request_uri('connect_tokens')]
+
+    def post_connect_token(self, **params):
+        """Obtain a new connect_token for an IMAP source.
+
+        * Note: unused connect tokens are purged after 24 hours.
+
+        Documentation: http://context.io/docs/2.0/accounts/sources/connect_tokens#post
+
+        Required Arguments:
+            callback_url: string (url) - When the user's mailbox is connected
+                to your API key, the browser will call this url (GET). This
+                call will have a parameter called contextio_token indicating
+                the connect_token related to this callback. You can then do a
+                get on this connect_token to obtain details about the account
+                and source created through that token and save that account id
+                in your own user data.
+
+        Returns:
+            A dictionary (data format below)
+
+            {
+              "success": string - true if connect_token was successfully
+                  created, false otherwise,
+              "token": string - Id of the token,
+              "resource_url": string - URL to of the token,
+              "browser_redirect_url": string - Redirect the user's browser to
+                  this URL to have them connect their mailbox through this
+                  token
+            }
+        """
+        all_args = req_args = ['callback_url']
+
+        params = Resource.sanitize_params(params, all_args, req_args)
+
+        return self._request_uri('connect_tokens', method='POST', params=params)
+
     def get_folders(self, **params):
         """Get list of folders in an IMAP source.
 
@@ -2411,14 +2480,19 @@ class ConnectToken(Resource):
             defn: a dictionary of parameters. The 'token' parameter is
                 required to make method calls.
         """
+        super(ConnectToken, self).__init__(parent, 'connect_tokens/{token}', defn)
 
-        super(ConnectToken, self).__init__(
-            parent, 'connect_tokens/{token}', defn
-        )
+        # This conditional is required because the account property
+        # in the response from /accounts/connect_tokens is a dict but
+        # but the account property in the response from /accounts/sources/connect_tokens
+        # is a string.
+        if "account" in defn:
+			if isinstance(defn["account"], basestring):
+				account_details = {"id": defn["account"]}
+			else:
+				account_details = defn["account"]
 
-        if 'account' in defn:
-            if defn['account']:
-                self.account = Account(self.parent, defn['account'])
+			self.account = Account(self.parent, account_details)
 
     def get(self):
         """Information about a given connect token.
