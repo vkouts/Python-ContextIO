@@ -40,7 +40,7 @@ import logging
 import re
 import six
 import collections
-
+import pkg_resources
 from datetime import datetime
 from rauth import OAuth1Session
 
@@ -245,6 +245,13 @@ class ContextIO(object):
         """
 
         session = OAuth1Session(self.consumer_key, self.consumer_secret)
+        
+        try:
+            lib_ver = pkg_resources.require("contextio")[0].version
+        except:
+            lib_ver = "dev"
+        
+        headers.update({"user-agent": "contextio/2.0/python-lib-{0}".format(lib_ver)})
 
         if method == 'POST':
             params['body'] = body
