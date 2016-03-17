@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 requires=['rauth', 'six']
 
 setup(name='contextio',
-    version='1.10.0',
+    version='v1.9.1',
     description='Library for accessing the Context.IO API v2.0 in Python',
     author='Tony Blank, Jesse Dhillon',
     author_email='tony@context.io, jesse@deva0.net',

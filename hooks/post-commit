@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ -a .version ]; then
+  VERSION=$(head -1 .version)
+  git tag $VERSION
+
+  echo "[post-commit hook] This commit was tagged with version $VERSION"
+  rm .version
+fi
