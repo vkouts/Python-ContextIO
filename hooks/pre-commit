@@ -6,7 +6,7 @@
 exec < /dev/tty
 
 function getVersion() {
-  PREVIOUS_VERSION=$(git log --pretty=oneline --decorate | grep -o -e "v\([0-9]*.\)\{2\}[0-9]*" | head -1)
+  PREVIOUS_VERSION=$(git show-ref --tags | grep -o -e "v\([0-9]*.\)\{2\}[0-9]*" | tail -1)
   echo "Previous version: $PREVIOUS_VERSION"
   while true; do
     read -p "[pre-commit hook] Enter a version number for this commit: " VERSION
