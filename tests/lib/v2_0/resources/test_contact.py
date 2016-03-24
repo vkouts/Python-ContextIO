@@ -9,7 +9,7 @@ from contextio.lib.v2_0.resources.file import File
 from contextio.lib.v2_0.resources.message import Message
 from contextio.lib.v2_0.resources.thread import Thread
 
-class TestContact(unittest.TestCase):
+class TestContactResource(unittest.TestCase):
     def setUp(self):
         self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
         self.account = Account(self.contextio, {"id": "fake_id"})

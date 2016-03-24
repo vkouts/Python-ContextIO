@@ -1,3 +1,5 @@
+import logging
+
 from contextio.lib.v2_0 import helpers
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 from contextio.lib.v2_0.resources.file import File
@@ -51,14 +53,25 @@ class Contact(BaseResource):
             True if self is updated, else will throw a request error
         """
         # since the data returned doesn't have an email key, add it from emails
-        data = self._request_uri('')
+        # cannot use the BaseResource get method here =/
+        data = self._request_uri("")
         if data.get("email") is None:
             emails = data.get("emails")
             if emails is not None and len(emails) > 0:
                 data['email'] = data['emails'][0]
 
+
         self.__init__(self.parent, data)
         return True
+
+    def put(self):
+        logging.info("This method is not implemented")
+
+    def post(self):
+        logging.info("This method is not implemented")
+
+    def delete(self):
+        logging.info("This method is not implemented")
 
     def get_files(self, **params):
         """List files exchanges with a contact.

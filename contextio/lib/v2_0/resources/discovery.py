@@ -1,3 +1,5 @@
+import logging
+
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 
 class Discovery(BaseResource):
@@ -32,3 +34,15 @@ class Discovery(BaseResource):
             defn: a dictionary of parameters.
         """
         super(Discovery, self).__init__(parent, 'discovery', defn)
+
+    def get(self):
+        logging.info("This method is not implemented")
+
+    def put(self):
+        logging.info("This method is not implemented")
+
+    def post(self):
+        logging.info("This method is not implemented")
+
+    def delete(self):
+        logging.info("This method is not implemented")

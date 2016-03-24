@@ -7,7 +7,7 @@ from contextio.lib.v2_0.resources.account import Account
 from contextio.lib.v2_0.resources.message import Message
 
 
-class TestMessage(unittest.TestCase):
+class TestMessageResource(unittest.TestCase):
     def setUp(self):
         self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
         self.account = Account(self.contextio, {"id": "fake_id"})

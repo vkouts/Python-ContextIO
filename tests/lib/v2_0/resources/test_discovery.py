@@ -4,7 +4,7 @@ from contextio.contextio import ContextIO
 from contextio.lib.v2_0.resources.discovery import Discovery
 
 
-class TestDiscovery(unittest.TestCase):
+class TestDiscoveryResource(unittest.TestCase):
     def setUp(self):
         self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
         self.discovery = Discovery(self.contextio, {

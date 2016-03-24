@@ -1,3 +1,5 @@
+import logging
+
 from contextio.lib.v2_0 import helpers
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 from contextio.lib.v2_0.resources.file import File
@@ -94,10 +96,11 @@ class Message(BaseResource):
         """
         all_args = ['include_thread_size', 'include_body', 'include_headers',
             'include_flags', 'body_type', 'include_source']
-        params = helpers.sanitize_params(params, all_args)
 
-        self.__init__(self.parent, self._request_uri('', params=params))
-        return True
+        return super(Message, self).get(params=params, all_args=all_args)
+
+    def put(self):
+        logging.info("This method is not implemented")
 
     def post(self, return_bool=True, **params):
         """Copy or move a message.
@@ -135,23 +138,10 @@ class Message(BaseResource):
         """
 
         req_args = ['dst_folder', ]
-        all_args = [
-            'flag_answered',
-            'move',
-            'dst_folder',
-            'dst_source',
-            'flag_seen',
-            'flag_flagged',
-            'flag_deleted',
-            'flag_draft']
-        params = helpers.sanitize_params(params, all_args, req_args)
+        all_args = ['flag_answered', 'move', 'dst_folder', 'dst_source', 'flag_seen',
+            'flag_flagged', 'flag_deleted', 'flag_draft']
 
-        status = self._request_uri('', method='POST', params=params)
-
-        if return_bool:
-            return bool(status['success'])
-
-        return status
+        return super(Message, self).post(return_bool=return_bool, params=params, all_args=all_args, required_args=req_args)
 
     def delete(self):
         """Delete a message.

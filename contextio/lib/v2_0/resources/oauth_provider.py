@@ -1,3 +1,5 @@
+import logging
+
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 
 class OauthProvider(BaseResource):
@@ -38,8 +40,13 @@ class OauthProvider(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        self.__init__(self.parent, self._request_uri(""))
-        return True
+        return super(OauthProvider, self).get(self.parent)
+
+    def put(self):
+        logging.info("This method is not implemented")
+
+    def post(self):
+        logging.info("This method is not implemented")
 
     def delete(self):
         """Remove a given oauth provider.

@@ -10,7 +10,7 @@ from contextio.lib.v2_0.resources.message import Message
 from contextio.lib.v2_0.resources.source import Source
 
 
-class TestFolder(unittest.TestCase):
+class TestFolderResource(unittest.TestCase):
     def setUp(self):
         self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
         self.account = Account(self.contextio, {"id": "fake_id"})

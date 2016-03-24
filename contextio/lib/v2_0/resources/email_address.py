@@ -1,4 +1,5 @@
-from contextio.lib.v2_0 import helpers
+import logging
+
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 
 class EmailAddress(BaseResource):
@@ -40,8 +41,7 @@ class EmailAddress(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        self.__init__(self.parent, self._request_uri(''))
-        return True
+        return super(EmailAddress, self).get()
 
     def post(self, **params):
         """Modifies a given email address.
@@ -58,15 +58,11 @@ class EmailAddress(BaseResource):
         Returns:
             Bool
         """
-        all_args = ["primary", ]
-        params = helpers.sanitize_params(params, all_args)
-
         # update EmailAddress object with new values
-        if "primary" in params:
+        if params.get("primary") is not None:
             self.primary = params["primary"]
 
-        status = self._request_uri("", method="POST", params=params)
-        return bool(status["success"])
+        return super(EmailAddress, self).post(params=params, all_args=["primary"])
 
     def delete(self):
         """Remove a given email address.
@@ -81,5 +77,8 @@ class EmailAddress(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri('', method='DELETE')
-        return bool(status['success'])
+        return super(EmailAddress, self).delete()
+
+
+    def put(self):
+        logging.info("This method is not implemented")

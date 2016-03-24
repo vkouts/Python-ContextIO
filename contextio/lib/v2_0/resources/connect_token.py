@@ -56,8 +56,7 @@ class ConnectToken(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        self.__init__(self.parent, self._request_uri(''))
-        return True
+        return super(ConnectToken, self).get()
 
     def delete(self):
         """Remove a given connect token.
@@ -71,5 +70,11 @@ class ConnectToken(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri('', method='DELETE')
-        return bool(status['success'])
+        return super(ConnectToken, self).delete()
+
+
+    def put(self):
+        logging.info("This method is not implemented")
+
+    def post(self):
+        logging.info("This method is not implemented")

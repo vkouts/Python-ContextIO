@@ -1,3 +1,5 @@
+import logging
+
 from contextio.lib.v2_0 import helpers
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 from contextio.lib.v2_0.resources.message import Message
@@ -38,8 +40,7 @@ class Folder(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        self.__init__(self.parent, self._request_uri(''))
-        return True
+        return super(Folder, self).get()
 
     def put(self, **params):
         """Create a folder on an IMAP source.
@@ -60,6 +61,9 @@ class Folder(BaseResource):
         params = helpers.sanitize_params(params, all_args)
         status = self._request_uri('', method='PUT', params=params)
         return bool(status['success'])
+
+    def post(self):
+        logging.info("This method is not implemented")
 
     def delete(self):
         """Remove a given folder.

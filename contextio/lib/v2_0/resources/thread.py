@@ -1,4 +1,5 @@
-from contextio.lib.v2_0 import helpers
+import logging
+
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 
 class Thread(BaseResource):
@@ -73,6 +74,15 @@ class Thread(BaseResource):
         all_args = ['include_body',
             'include_headers', 'include_flags', 'body_type', 'limit', 'offset'
         ]
-        params = helpers.sanitize_params(params, all_args)
-        self.__init__(self.parent, self._request_uri('', params=params))
-        return True
+
+        return super(Thread, self).get(self.parent, params=params, all_args=all_args)
+
+
+    def put(self):
+        logging.info("This method is not implemented")
+
+    def post(self):
+        logging.info("This method is not implemented")
+
+    def delete(self):
+        logging.info("This method is not implemented")

@@ -6,7 +6,7 @@ from contextio.contextio import ContextIO
 from contextio.lib.v2_0.resources.email_address import EmailAddress
 
 
-class TestEmailAddress(unittest.TestCase):
+class TestEmailAddressResource(unittest.TestCase):
     def setUp(self):
         self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
         self.email_address = EmailAddress(self.contextio, {

@@ -1,3 +1,5 @@
+import logging
+
 from contextio.lib.v2_0 import helpers
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 
@@ -49,8 +51,10 @@ class Source(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        self.__init__(self.parent, self._request_uri(''))
-        return True
+        return super(Source, self).get()
+
+    def put(self):
+        logging.info("This method is not implemented")
 
     def delete(self):
         """Delete a data source for an account.
@@ -63,8 +67,7 @@ class Source(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri('', method='DELETE')
-        return bool(status['success'])
+        return super(Source, self).delete()
 
     def post(self, **params):
         """Update a data source for an account.
@@ -102,13 +105,13 @@ class Source(BaseResource):
             'expunge_on_deleted_flag', 'password', 'provider_refresh_token',
             'provider_consumer_key', 'status_callback_url'
         ]
-        params = helpers.sanitize_params(params, all_args)
 
-        status = self._request_uri('', method='POST', params=params)
-        if 'force_status_check' in params:
+        status = super(Source, self).post(return_bool=False, params=params, all_args=all_args)
+
+        if "force_status_check" in params:
             return bool(status['status'])
-        else:
-            return bool(status['success'])
+
+        return bool(status['success'])
 
     def delete_connect_token(self, token_id):
         """Removes a connect token created for an IMAP source.

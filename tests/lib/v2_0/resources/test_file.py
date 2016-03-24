@@ -8,7 +8,7 @@ from contextio.lib.v2_0.resources.account import Account
 from contextio.lib.v2_0.resources.file import File
 
 
-class TestContact(unittest.TestCase):
+class TestFileResource(unittest.TestCase):
     def setUp(self):
         self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
         self.account = Account(self.contextio, {"id": "fake_id"})

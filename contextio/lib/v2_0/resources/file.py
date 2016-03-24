@@ -1,3 +1,5 @@
+import logging
+
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 
 class File(BaseResource):
@@ -67,8 +69,16 @@ class File(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        self.__init__(self.parent, self._request_uri(''))
-        return True
+        return super(File, self).get()
+
+    def put(self):
+        logging.info("This method is not implemented")
+
+    def post(self):
+        logging.info("This method is not implemented")
+
+    def delete(self):
+        logging.info("This method is not implemented")
 
     def get_content(self, download_link=False):
         """Download a file.

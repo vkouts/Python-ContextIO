@@ -55,3 +55,30 @@ class BaseResource(object):
         uri = self._uri_for(uri_elems)
         return self.parent._request_uri(
             uri, method=method, params=params, headers=headers, body=body)
+
+    def get(self, uri="", return_bool=True, params={}, all_args=[], required_args=[]):
+        response = self._request_uri(uri, params=helpers.sanitize_params(params, all_args, required_args))
+        self.__init__(self.parent, response)
+
+        if return_bool:
+            return True
+
+        return response
+
+    def delete(self, uri=""):
+        response = self._request_uri(uri, method='DELETE')
+        return bool(response['success'])
+
+    def post(self, uri="", return_bool=True, params={}, headers={}, all_args=[], required_args=[]):
+        params = helpers.sanitize_params(params, all_args, required_args)
+
+        response = self._request_uri(uri, method="POST", params=params, headers=headers)
+
+        if return_bool:
+            return bool(response['success'])
+
+        return response
+
+
+    def put(self):
+        logging.info("This method is not implemented")

@@ -1,4 +1,4 @@
-# from __future__ import absolute_import
+import logging
 
 from contextio.lib.v2_0 import helpers
 from contextio.lib.v2_0.resources.base_resource import BaseResource
@@ -6,6 +6,7 @@ from contextio.lib.v2_0.resources.source import Source
 from contextio.lib.v2_0.resources.connect_token import ConnectToken
 from contextio.lib.v2_0.resources.contact import Contact
 from contextio.lib.v2_0.resources.email_address import EmailAddress
+from contextio.lib.v2_0.resources.thread import Thread
 from contextio.lib.v2_0.resources.webhook import WebHook
 from contextio.lib.v2_0.resources.file import File
 from contextio.lib.v2_0.resources.message import Message
@@ -32,16 +33,16 @@ class Account(BaseResource):
         'first_name', 'last_name', 'password_expired', 'sources',
         'resource_url']
 
-    def __init__(self, parent, defn):
+    def __init__(self, parent, definition):
         """Constructor.
 
         Required Arguments:
             parent: ContextIO object - parent is the ContextIO object to handle
                 authentication.
-            defn: a dictionary of parameters. The 'id' parameter is required to
+            definition: a dictionary of parameters. The 'id' parameter is required to
                 make method calls.
         """
-        super(Account, self).__init__(parent, "accounts/{id}", defn)
+        super(Account, self).__init__(parent, "accounts/{id}", definition)
 
     def get(self):
         """GET details for a given account.
@@ -56,8 +57,7 @@ class Account(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        self.__init__(self.parent, self._request_uri(''))
-        return True
+        return super(Account, self).get()
 
     def delete(self):
         """Remove a given account.
@@ -72,8 +72,7 @@ class Account(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri('', method='DELETE')
-        return bool(status['success'])
+        return super(Account, self).delete()
 
     def post(self, **params):
         """Modifies a given account.
@@ -89,18 +88,18 @@ class Account(BaseResource):
         Returns:
             Bool
         """
+
         all_args = ['first_name', 'last_name']
 
-        params = helpers.sanitize_params(params, all_args)
+        for prop in all_args:
+            value = params.get(prop)
+            if value:
+                setattr(self, prop, value)
 
-        # update account object with new values
-        if 'first_name' in params:
-            self.first_name = params['first_name']
-        if 'last_name' in params:
-            self.last_name = params['last_name']
+        return super(Account, self).post(params=params, all_args=all_args)
 
-        status = self._request_uri('', method='POST', params=params)
-        return bool(status['success'])
+    def put(self):
+        logging.info("This method is not implemented")
 
     def get_connect_tokens(self):
         """List of connect tokens created for an account.
@@ -115,67 +114,6 @@ class Account(BaseResource):
         """
 
         return [ConnectToken(self, obj) for obj in self._request_uri('connect_tokens')]
-
-    def post_connect_token(self, **params):
-        """Obtain a new connect_token for a specific account.
-
-        * Note: unused connect tokens are purged after 24 hours.
-
-        Documentation: http://context.io/docs/2.0/accounts/connect_tokens#post
-
-        Required Arguments:
-            callback_url: string (url) - When the user's mailbox is connected
-                to your API key, the browser will call this url (GET). This
-                call will have a parameter called contextio_token indicating
-                the connect_token related to this callback. You can then do a
-                get on this connect_token to obtain details about the account
-                and source created through that token and save that account id
-                in your own user data.
-
-        Optional Arguments:
-            email: string (email) - The email address of the account to be
-                added. If specified, the first step of the connect UI where
-                users are prompted for their email address, first name and
-                last name is skipped.
-            first_name: string - First name of the account holder.
-            last_name: string - Last name of the account holder.
-            source_callback_url: string (url) - If specified, we'll make a
-                POST request to this URL when the initial sync is completed.
-            source_sync_all_folders: integer - By default, we filter out some
-                folders like 'Deleted Items' and 'Drafts'. Set this parameter
-                to 1 to turn off this filtering and show every single folder.
-            source_sync_flags: integer - By default, we don't synchronize IMAP
-                flags. Set this parameter to 1 to turn on IMAP flag syncing
-                for the 'seen' and 'flagged' flags.
-            source_raw_file_list: integer - By default, we filter out files
-                like signature images from the files list. Set this parameter
-                to 1 to turn off this filtering and show every single file
-                attachment.
-            status_callback_url: string (url) - If specified, we'll make a POST
-                request to this URL if the connection status of the source changes.
-
-        Returns:
-            A dictionary (data format below)
-
-            {
-              "success": string - true if connect_token was successfully
-                  created, false otherwise,
-              "token": string - Id of the token,
-              "resource_url": string - URL to of the token,
-              "browser_redirect_url": string - Redirect the user's browser to
-                  this URL to have them connect their mailbox through this
-                  token
-            }
-        """
-        req_args = ['callback_url', ]
-        all_args = ['callback_url', 'email', 'first_name', 'last_name',
-            'source_callback_url', 'source_sync_all_folders',
-            'source_sync_flags', 'source_raw_file_list', 'status_callback_url'
-        ]
-
-        params = helpers.sanitize_params(params, all_args, req_args)
-
-        return self._request_uri('connect_tokens', method='POST', params=params)
 
     def get_contacts(self, **params):
         """List contacts in an account.
@@ -206,10 +144,9 @@ class Account(BaseResource):
             'sort_by', 'sort_order'
         ]
 
-        params = helpers.sanitize_params(params, all_args)
-
+        contacts = super(Account, self).get(uri="contacts", return_bool=False, params=params, all_args=all_args)
         return [
-            Contact(self, obj) for obj in self._request_uri('contacts', params=params).get('matches')
+            Contact(self, obj) for obj in contacts.get('matches')
         ]
 
     def get_email_addresses(self):
@@ -223,29 +160,7 @@ class Account(BaseResource):
         Returns:
             A list of EmailAddress objects.
         """
-        return [EmailAddress(self, obj) for obj in self._request_uri(
-            'email_addresses'
-        )]
-
-    def post_email_address(self, **params):
-        """Add a new email address as an alias for an account.
-
-        Documentation: http://context.io/docs/2.0/accounts/email_addresses#post
-
-        Required Arguments:
-            email_address: string - An email address.
-
-        Returns:
-            An EmailAddress object.
-        """
-        req_args = ['email_address', ]
-        all_args = ['email_address', ]
-
-        params = helpers.sanitize_params(params, all_args, req_args)
-
-        return EmailAddress(self, self._request_uri(
-            'email_addresses', method='POST', params=params
-        ))
+        return [EmailAddress(self, obj) for obj in self._request_uri("email_addresses")]
 
     def get_files(self, **params):
         """List of files found as email attachments.
@@ -422,52 +337,8 @@ class Account(BaseResource):
             params['from'] = params['from_']
             del params['from_']
 
-        return [Message(self, obj) for obj in self._request_uri(
-            'messages', params=params
-        )]
-
-    def post_message(self, **params):
-        """Add a mesage in a given folder.
-
-        Documentation: http://context.io/docs/2.0/accounts/messages#post
-
-        Required Arguments:
-            dst_source: string - Label of the source you want the message
-                copied to
-            dst_folder: string - The folder within dst_source the message
-                should be copied to
-            message: file - Raw RFC-822 message data. If you use the "view
-                message source" function of your email client, what you'll see
-                there is what we expect to receive here. Hint: you can get
-                this with the accounts/messages/source call.
-
-        Optional Arguments:
-            flag_seen: integer - Message has been read. Set this parameter
-                to 1 to set the flag, 0 to unset it.
-            flag_answered: integer - Message has been answered. Set this
-                parameter to 1 to set the flag, 0 to unset it.
-            flag_flagged: integer - Message is "flagged" for urgent/special
-                attention. Set this parameter to 1 to set the flag, 0 to unset it.
-            flag_deleted: integer - Message is "deleted" for later removal.
-                An alternative way of deleting messages is to move it to the Trash folder.
-                Set this parameter to 1 to set the flag, 0 to unset it.
-            flag_draft: integer - Message has not completed composition (marked as a draft).
-                Set this parameter to 1 to set the flag, 0 to unset it.
-
-        Returns:
-            Bool
-        """
-        headers = {'Content-Type': 'multipart/form-data'}
-
-        req_args = ['dst_source', 'dst_folder', 'message']
-        all_args = ['dst_source', 'dst_folder', 'message',
-            'flag_seen', 'flag_answered', 'flag_flagged', 'flag_deleted', 'flag_draft'
-        ]
-
-        params = helpers.sanitize_params(params, all_args, req_args)
-
-        return self._request_uri(
-            'messages', method='POST', params=params, headers=headers)
+        return [
+            Message(self, obj) for obj in self._request_uri('messages', params=params)]
 
     def get_sources(self, **params):
         """Lists IMAP sources assigned for an account.
@@ -494,87 +365,6 @@ class Account(BaseResource):
             'sources', params=params
         )]
 
-    def post_source(self, **params):
-        """Add a mailbox to a given account.
-
-        Documentation: http://context.io/docs/2.0/accounts/sources#post
-
-        Required Arguments:
-            email: string - The primary email address used to receive emails
-                in this account
-            server: string - Name of IP of the IMAP server, eg. imap.gmail.com
-            username: string - The username used to authenticate an IMAP
-                connection. On some servers, this is the same thing as
-                the primary email address.
-            use_ssl: integer - Set to 1 if you want SSL encryption to
-                be used when opening connections to the IMAP server. Any
-                other value will be considered as "do not use SSL"
-            port: integer - Port number to connect to on the server. Keep in
-                mind that most IMAP servers will have one port for standard
-                connection and another one for encrypted connection (see
-                use-ssl parameter above)
-            type: string - Currently, the only supported type is IMAP
-
-        Optional Arguments:
-            origin_ip: string - IP address of the end user requesting the account
-                to be created
-            expunge_on_deleted_flag: integer - By default, we don't filter out messages
-                flagged as deleted. Set this parameter to 1 to turn on this filtering.
-            sync_all_folders: integer - By default, we filter out some folders like
-                'Deleted Items' and 'Drafts'. Set this parameter to 1 to turn off this
-                filtering and show every single folder.
-            sync_folders: string - By default, we filter out some folders like
-                'Deleted Items' and 'Drafts'. Set this parameter to
-                'All,Trash' to show the 'Deleted Items' folder.
-            sync_flags:  integer By default, we don't synchronize IMAP flags.
-                Set this parameter to 1 to turn on IMAP flag syncing for the 'seen' and
-                'flagged' flags.
-            raw_file_list: integer - By default, we filter out files like
-                signature images or those winmail.dat files form the files
-                list. Set this parameter to 1 to turn off this filtering and
-                show every single file attachments.
-            password: string - Password for authentication on the IMAP server.
-                Ignored if any of the provider_* parameters are set below.
-            provider_refresh_token: An OAuth2 refresh token obtained from the
-                IMAP account provider to be used to authenticate on this email
-                account.
-            provider_consumer_key: string - The OAuth consumer key used to
-                obtain the the token and token secret above for that account.
-                That consumer key and secret must be configured in your
-                Context.IO account.
-            callback_url: string (url) - If specified, we'll make a POST
-                request to this URL when the initial sync is completed.
-            status_callback_url: string (url) - If specified, we'll make a POST
-                request to this URL if the connection status of the source changes.
-
-        Returns:
-            A mostly empty Source object or False if something failed.
-        """
-        # set some default values
-        if 'use_ssl' not in params:
-            params['use_ssl'] = 1
-        if 'port' not in params:
-            params['port'] = 993
-        if 'type' not in params:
-            params['type'] = 'IMAP'
-
-        req_args = ['email', 'server', 'username', 'port', 'type', 'use_ssl']
-        all_args = [
-            'email', 'server', 'username', 'port', 'type', 'use_ssl',
-            'origin_ip', 'expunge_on_deleted_flag', 'sync_all_folders',
-            'sync_folders', 'sync_flags', 'raw_file_list', 'password',
-            'provider_refresh_token', 'provider_consumer_key',
-            'callback_url', 'status_callback_url'
-        ]
-        params = helpers.sanitize_params(params, all_args, req_args)
-
-        data = self._request_uri('sources', method='POST', params=params)
-        if data is not None:
-            status = bool(data['success'])
-            return Source(self, {'label': data['label']})
-        else:
-            return False
-
     def get_sync(self):
         """Sync status for all sources of the account.
 
@@ -596,25 +386,6 @@ class Account(BaseResource):
         }
         """
         return self._request_uri('sync')
-
-    def post_sync(self):
-        """Trigger a sync of all sources on the account.
-
-        Documentation: http://context.io/docs/2.0/accounts/sync#post
-
-        Arguments:
-            None
-
-        Returns:
-            A dictionary (see below for data structure)
-
-            {
-                u'syncs_queued': STRING,
-                u'resource_url': STRING,
-                u'success': BOOL
-            }
-        """
-        return self._request_uri('sync', method='POST')
 
     def get_threads(self, **params):
         """List of threads on an account.
@@ -719,6 +490,232 @@ class Account(BaseResource):
         """
         return [WebHook(self, obj) for obj in self._request_uri('webhooks')]
 
+    def post_connect_token(self, **params):
+        """Obtain a new connect_token for a specific account.
+
+        * Note: unused connect tokens are purged after 24 hours.
+
+        Documentation: http://context.io/docs/2.0/accounts/connect_tokens#post
+
+        Required Arguments:
+            callback_url: string (url) - When the user's mailbox is connected
+                to your API key, the browser will call this url (GET). This
+                call will have a parameter called contextio_token indicating
+                the connect_token related to this callback. You can then do a
+                get on this connect_token to obtain details about the account
+                and source created through that token and save that account id
+                in your own user data.
+
+        Optional Arguments:
+            email: string (email) - The email address of the account to be
+                added. If specified, the first step of the connect UI where
+                users are prompted for their email address, first name and
+                last name is skipped.
+            first_name: string - First name of the account holder.
+            last_name: string - Last name of the account holder.
+            source_callback_url: string (url) - If specified, we'll make a
+                POST request to this URL when the initial sync is completed.
+            source_sync_all_folders: integer - By default, we filter out some
+                folders like 'Deleted Items' and 'Drafts'. Set this parameter
+                to 1 to turn off this filtering and show every single folder.
+            source_sync_flags: integer - By default, we don't synchronize IMAP
+                flags. Set this parameter to 1 to turn on IMAP flag syncing
+                for the 'seen' and 'flagged' flags.
+            source_raw_file_list: integer - By default, we filter out files
+                like signature images from the files list. Set this parameter
+                to 1 to turn off this filtering and show every single file
+                attachment.
+            status_callback_url: string (url) - If specified, we'll make a POST
+                request to this URL if the connection status of the source changes.
+
+        Returns:
+            A dictionary (data format below)
+
+            {
+              "success": string - true if connect_token was successfully
+                  created, false otherwise,
+              "token": string - Id of the token,
+              "resource_url": string - URL to of the token,
+              "browser_redirect_url": string - Redirect the user's browser to
+                  this URL to have them connect their mailbox through this
+                  token
+            }
+        """
+        req_args = ['callback_url']
+        all_args = [
+            'callback_url', 'email', 'first_name', 'last_name', 'source_callback_url',
+            'source_sync_all_folders', 'source_sync_flags', 'source_raw_file_list',
+            'status_callback_url'
+        ]
+
+        return super(Account, self).post(
+            uri="connect_tokens", return_bool=False, params=params, all_args=all_args,
+            required_args=req_args)
+
+    def post_email_address(self, **params):
+        """Add a new email address as an alias for an account.
+
+        Documentation: http://context.io/docs/2.0/accounts/email_addresses#post
+
+        Required Arguments:
+            email_address: string - An email address.
+
+        Returns:
+            An EmailAddress object.
+        """
+
+        response = super(Account, self).post(
+            uri="email_addresses", return_bool=False, params=params, all_args=["email_address"],
+            required_args=["email_address"])
+
+        return EmailAddress(self, response)
+
+    def post_message(self, **params):
+        """Add a mesage in a given folder.
+
+        Documentation: http://context.io/docs/2.0/accounts/messages#post
+
+        Required Arguments:
+            dst_source: string - Label of the source you want the message
+                copied to
+            dst_folder: string - The folder within dst_source the message
+                should be copied to
+            message: file - Raw RFC-822 message data. If you use the "view
+                message source" function of your email client, what you'll see
+                there is what we expect to receive here. Hint: you can get
+                this with the accounts/messages/source call.
+
+        Optional Arguments:
+            flag_seen: integer - Message has been read. Set this parameter
+                to 1 to set the flag, 0 to unset it.
+            flag_answered: integer - Message has been answered. Set this
+                parameter to 1 to set the flag, 0 to unset it.
+            flag_flagged: integer - Message is "flagged" for urgent/special
+                attention. Set this parameter to 1 to set the flag, 0 to unset it.
+            flag_deleted: integer - Message is "deleted" for later removal.
+                An alternative way of deleting messages is to move it to the Trash folder.
+                Set this parameter to 1 to set the flag, 0 to unset it.
+            flag_draft: integer - Message has not completed composition (marked as a draft).
+                Set this parameter to 1 to set the flag, 0 to unset it.
+
+        Returns:
+            Bool
+        """
+        headers = {"Content-Type": "multipart/form-data"}
+
+        req_args = ["dst_source", "dst_folder", "message"]
+
+        all_args = [
+            "dst_source", "dst_folder", "message", "flag_seen", "flag_answered", "flag_flagged",
+            "flag_deleted", "flag_draft"
+        ]
+
+        return super(Account, self).post(
+            uri="messages", return_bool=False, params=params, headers=headers, all_args=all_args,
+            required_args=req_args)
+
+    def post_source(self, **params):
+        """Add a mailbox to a given account.
+
+        Documentation: http://context.io/docs/2.0/accounts/sources#post
+
+        Required Arguments:
+            email: string - The primary email address used to receive emails
+                in this account
+            server: string - Name of IP of the IMAP server, eg. imap.gmail.com
+            username: string - The username used to authenticate an IMAP
+                connection. On some servers, this is the same thing as
+                the primary email address.
+            use_ssl: integer - Set to 1 if you want SSL encryption to
+                be used when opening connections to the IMAP server. Any
+                other value will be considered as "do not use SSL"
+            port: integer - Port number to connect to on the server. Keep in
+                mind that most IMAP servers will have one port for standard
+                connection and another one for encrypted connection (see
+                use-ssl parameter above)
+            type: string - Currently, the only supported type is IMAP
+
+        Optional Arguments:
+            origin_ip: string - IP address of the end user requesting the account
+                to be created
+            expunge_on_deleted_flag: integer - By default, we don't filter out messages
+                flagged as deleted. Set this parameter to 1 to turn on this filtering.
+            sync_all_folders: integer - By default, we filter out some folders like
+                'Deleted Items' and 'Drafts'. Set this parameter to 1 to turn off this
+                filtering and show every single folder.
+            sync_folders: string - By default, we filter out some folders like
+                'Deleted Items' and 'Drafts'. Set this parameter to
+                'All,Trash' to show the 'Deleted Items' folder.
+            sync_flags:  integer By default, we don't synchronize IMAP flags.
+                Set this parameter to 1 to turn on IMAP flag syncing for the 'seen' and
+                'flagged' flags.
+            raw_file_list: integer - By default, we filter out files like
+                signature images or those winmail.dat files form the files
+                list. Set this parameter to 1 to turn off this filtering and
+                show every single file attachments.
+            password: string - Password for authentication on the IMAP server.
+                Ignored if any of the provider_* parameters are set below.
+            provider_refresh_token: An OAuth2 refresh token obtained from the
+                IMAP account provider to be used to authenticate on this email
+                account.
+            provider_consumer_key: string - The OAuth consumer key used to
+                obtain the the token and token secret above for that account.
+                That consumer key and secret must be configured in your
+                Context.IO account.
+            callback_url: string (url) - If specified, we'll make a POST
+                request to this URL when the initial sync is completed.
+            status_callback_url: string (url) - If specified, we'll make a POST
+                request to this URL if the connection status of the source changes.
+
+        Returns:
+            A mostly empty Source object or False if something failed.
+        """
+        # set some default values
+        if 'use_ssl' not in params:
+            params['use_ssl'] = 1
+        if 'port' not in params:
+            params['port'] = 993
+        if 'type' not in params:
+            params['type'] = 'IMAP'
+
+        req_args = ['email', 'server', 'username', 'port', 'type', 'use_ssl']
+        all_args = [
+            'email', 'server', 'username', 'port', 'type', 'use_ssl',
+            'origin_ip', 'expunge_on_deleted_flag', 'sync_all_folders',
+            'sync_folders', 'sync_flags', 'raw_file_list', 'password',
+            'provider_refresh_token', 'provider_consumer_key',
+            'callback_url', 'status_callback_url'
+        ]
+
+        data = super(Account, self).post(
+            uri="sources", return_bool=False, params=params, all_args=all_args,
+            required_args=req_args
+        )
+
+        if data.get("success") is False:
+            return False
+
+        return Source(self, {'label': data['label']})
+
+    def post_sync(self):
+        """Trigger a sync of all sources on the account.
+
+        Documentation: http://context.io/docs/2.0/accounts/sync#post
+
+        Arguments:
+            None
+
+        Returns:
+            A dictionary (see below for data structure)
+
+            {
+                u'syncs_queued': STRING,
+                u'resource_url': STRING,
+                u'success': BOOL
+            }
+        """
+        return self._request_uri("sync", method="POST")
+
     def post_webhook(self, **params):
         """Create a new WebHook on an account.
 
@@ -789,12 +786,11 @@ class Account(BaseResource):
             'include_body', 'body_type', 'include_parsed_receipts'
         ]
 
-        params = helpers.sanitize_params(params, all_args, req_args)
+        webhook = super(Account, self).post(
+            uri="webhooks", params=params, return_bool=False, all_args=all_args, required_args=req_args)
 
-        data = self._request_uri('webhooks', method='POST', params=params)
-        status = bool(data['success'])
-
-        if status:
-            return WebHook(self, {'webhook_id': data['webhook_id']})
-        else:
+        if bool(webhook['success']) is False:
             return False
+
+        return WebHook(self, {'webhook_id': webhook['webhook_id']})
+

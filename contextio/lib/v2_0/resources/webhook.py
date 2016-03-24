@@ -1,4 +1,5 @@
-from contextio.lib.v2_0 import helpers
+import logging
+
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 
 class WebHook(BaseResource):
@@ -81,8 +82,25 @@ class WebHook(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        self.__init__(self.parent, self._request_uri(''))
-        return True
+        return super(WebHook, self).get()
+
+    def put(self):
+        logging.info("This method is not implemented")
+
+    def post(self, **params):
+        """Change properties of a given WebHook.
+
+        Required Arguments:
+            active: integer - The active property of a WebHook allows you to
+                pause (set to 0) or resume (set to 1).
+
+        Returns:
+            Bool
+        """
+        req_args = ["active"]
+        all_args = ["active"]
+
+        return super(WebHook, self).post(params=params, all_args=all_args, required_args=req_args)
 
     def delete(self):
         """Delete a webhook.
@@ -95,21 +113,7 @@ class WebHook(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri('', method='DELETE')
-        return bool(status['success'])
+        return super(WebHook, self).delete()
 
-    def post(self, **params):
-        """Change properties of a given WebHook.
 
-        Required Arguments:
-            active: integer - The active property of a WebHook allows you to
-                pause (set to 0) or resume (set to 1).
 
-        Returns:
-            Bool
-        """
-        req_args = ['active', ]
-        all_args = ['active', ]
-        params = helpers.sanitize_params(params, all_args, req_args)
-        status = self._request_uri('', method='POST', params=params)
-        return bool(status['success'])
