@@ -1,0 +1,89 @@
+from mock import patch
+import json
+import httpretty
+import unittest
+
+from contextio.contextio import ContextIO
+from contextio.lib.v2_0.resources.account import Account
+from contextio.lib.v2_0.resources.file import File
+
+
+class TestContact(unittest.TestCase):
+    def setUp(self):
+        self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
+        self.account = Account(self.contextio, {"id": "fake_id"})
+
+        self.file = File(self.account, {"file_id": "fake_file_id"})
+
+    def test_constructor_creates_file_object_with_all_attributes_in_keys_list(self):
+        self.assertTrue(hasattr(self.file, "size"))
+        self.assertTrue(hasattr(self.file, "type"))
+        self.assertTrue(hasattr(self.file, "subject"))
+        self.assertTrue(hasattr(self.file, "date"))
+        self.assertTrue(hasattr(self.file, "date_indexed"))
+        self.assertTrue(hasattr(self.file, "addresses"))
+        self.assertTrue(hasattr(self.file, "person_info"))
+        self.assertTrue(hasattr(self.file, "file_name"))
+        self.assertTrue(hasattr(self.file, "file_name_structure"))
+        self.assertTrue(hasattr(self.file, "body_section"))
+        self.assertTrue(hasattr(self.file, "file_id"))
+        self.assertTrue(hasattr(self.file, "supports_preview"))
+        self.assertTrue(hasattr(self.file, "is_embedded"))
+        self.assertTrue(hasattr(self.file, "content_disposition"))
+        self.assertTrue(hasattr(self.file, "content_id"))
+        self.assertTrue(hasattr(self.file, "message_id"))
+        self.assertTrue(hasattr(self.file, "email_message_id"))
+        self.assertTrue(hasattr(self.file, "gmail_message_id"))
+        self.assertTrue(hasattr(self.file, "gmail_thread_id"))
+
+    @httpretty.activate
+    def test_get_updates_attributes_and_returns_True(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            "https://api.context.io/2.0/accounts/fake_id/files/fake_file_id/",
+            status=200,
+            body=json.dumps({
+                "file_id": "fake_file_id",
+                "subject": "foobar"
+            })
+        )
+
+        self.assertIsNone(self.file.subject)
+
+        file_updated = self.file.get()
+
+        self.assertTrue(file_updated)
+        self.assertEqual("foobar", self.file.subject)
+
+    @patch("contextio.lib.v2_0.resources.file.File._request_uri")
+    def test_get_content_calls_request_uri_with_correct_arguments(self, mock_request):
+        file = File(self.account, {"file_id": "fake_file_id"})
+
+        file.get_content()
+
+        mock_request.assert_called_with("content", headers={})
+
+    @patch("contextio.lib.v2_0.resources.file.File._request_uri")
+    def test_get_content_calls_request_uri_with_correct_arguments_when_download_link_is_True(self, mock_request):
+        file = File(self.account, {"file_id": "fake_file_id"})
+
+        file.get_content(download_link=True)
+
+        mock_request.assert_called_with("content", headers={"Accept": "text/uri-list"})
+
+    @httpretty.activate
+    def test_get_related_returns_a_list_of_File_objects(self):
+        httpretty.register_uri(
+            httpretty.GET,
+            "https://api.context.io/2.0/accounts/fake_id/files/fake_file_id/related",
+            status=200,
+            body=json.dumps([{
+                "file_id": "related_file_id",
+            }])
+        )
+
+        related_files = self.file.get_related()
+
+        self.assertEqual(1, len(related_files))
+        self.assertIsInstance(related_files[0], File)
+
