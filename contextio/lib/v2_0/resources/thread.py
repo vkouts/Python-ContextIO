@@ -17,30 +17,35 @@ class Thread(BaseResource):
             found in
         sources: list of Source objects
     """
-    keys = ['gmail_thread_id', 'email_message_ids', 'person_info', 'messages',
-        'subject', 'folders', 'sources']
+    resource_id = "gmail_thread_id"
+    keys = [
+        "gmail_thread_id", "email_message_ids", "person_info", "messages", "subject", "folders",
+        "sources"
+    ]
 
-    def __init__(self, parent, defn):
+    def __init__(self, parent, definition):
         """Constructor.
 
         Required Arguments:
             parent: Account object - parent is an Account object.
-            defn: a dictionary of parameters. The 'gmail_thread_id' parameter
+            definition: a dictionary of parameters. The 'gmail_thread_id' parameter
                 is required to make method calls.
         """
-        super(Thread, self).__init__(parent, 'threads/{gmail_thread_id}', defn)
+        super(Thread, self).__init__(parent, 'threads/{gmail_thread_id}', definition)
 
-        # Need to figure out this circular dependancy stuff
+        # This is going to be gross - prepare yourself
 
-        # if 'messages' in defn:
-        #     self.messages = [
-        #         Message(self.parent, message) for message in defn['messages']
-        #     ]
+        if "messages" in definition:
+            from contextio.lib.v2_0.resources.message import Message
+            self.messages = [
+                Message(self.parent, message) for message in definition['messages']
+            ]
 
-        # if 'sources' in defn:
-        #     self.sources = [
-        #         Source(self.parent, source) for source in defn['sources']
-        #     ]
+        if 'sources' in definition:
+            from contextio.lib.v2_0.resources.source import Source
+            self.sources = [
+                Source(self.parent, source) for source in definition['sources']
+            ]
 
     def get(self, **params):
         """Returns files, contacts, and messages on a given thread.
@@ -71,8 +76,8 @@ class Thread(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        all_args = ['include_body',
-            'include_headers', 'include_flags', 'body_type', 'limit', 'offset'
+        all_args = [
+            'include_body', 'include_headers', 'include_flags', 'body_type', 'limit', 'offset'
         ]
 
         return super(Thread, self).get(self.parent, params=params, all_args=all_args)

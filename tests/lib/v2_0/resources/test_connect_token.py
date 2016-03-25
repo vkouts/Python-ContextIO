@@ -24,7 +24,6 @@ class TestConnectTokenResource(unittest.TestCase):
         self.assertTrue(hasattr(self.connect_token, "last_name"))
         self.assertTrue(hasattr(self.connect_token, "account"))
 
-
     def test_constructor_sets_account_attribute_to_none_if_empty_dict(self):
         definition = {
             "token": "fake_token",

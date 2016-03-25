@@ -25,8 +25,9 @@ class Contact(BaseResource):
             To, CC, or BCC and an email from this account in From
         email: string (email) - one of the contact's email addresses
     """
-    keys = ['emails', 'name', 'thumbnail', 'last_received', 'last_sent',
-        'count', 'sent_count', 'received_count', 'sent_from_account_count', 'email']
+    resource_id = "email"
+    keys = ["emails", "name", "thumbnail", "last_received", "last_sent",
+        "count", "sent_count", "received_count", "sent_from_account_count", "email"]
 
     def __init__(self, parent, definition):
         """Constructor.
@@ -36,9 +37,10 @@ class Contact(BaseResource):
             definition: a dictionary of parameters. The 'email' parameter is
                 required to make method calls.
         """
+
         super(Contact, self).__init__(parent, 'contacts/{email}',  definition)
 
-        if not definition.get("emails"):
+        if definition.get("emails") is None:
             self.emails = [definition['email']]
 
     def get(self):
@@ -54,12 +56,11 @@ class Contact(BaseResource):
         """
         # since the data returned doesn't have an email key, add it from emails
         # cannot use the BaseResource get method here =/
-        data = self._request_uri("")
+        data = self._request_uri()
         if data.get("email") is None:
             emails = data.get("emails")
             if emails is not None and len(emails) > 0:
                 data['email'] = data['emails'][0]
-
 
         self.__init__(self.parent, data)
         return True

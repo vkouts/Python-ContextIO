@@ -12,22 +12,20 @@ class OauthProvider(BaseResource):
         provider_consumer_secret: string - The OAuth consumer secret
         resource_url: string - full url of the resource
     """
+    resource_id = "provider_consumer_key"
     keys = ["type", "provider_consumer_key", "provider_consumer_secret",
         "resource_url"
     ]
-    def __init__(self, parent, defn):
+    def __init__(self, parent, definition):
         """Constructor.
 
         Required Arguments:
             parent: ContextIO object - parent is an ContextIO object.
-            defn: a dictionary of parameters. The "provider_consumer_key"
+            definition: a dictionary of parameters. The "provider_consumer_key"
                 parameter is required to make method calls.
         """
         super(OauthProvider, self).__init__(
-            parent,
-            "oauth_providers/{provider_consumer_key}",
-            defn
-        )
+            parent, "oauth_providers/{provider_consumer_key}", definition)
 
     def get(self):
         """Get information about a given oauth provider.
@@ -59,5 +57,4 @@ class OauthProvider(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri("", method="DELETE")
-        return bool(status["success"])
+        return super(OauthProvider, self).delete()

@@ -7,17 +7,11 @@ from contextio.lib.v2_0.resources.discovery import Discovery
 class TestDiscoveryResource(unittest.TestCase):
     def setUp(self):
         self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
-        self.discovery = Discovery(self.contextio, {
-            "email": "fake@email.com",
-            "found": True,
-            "type": "catpants",
-            "imap": {"foo": "bar"},
-            "documentation": ["some.url"]
-        })
+        self.discovery = Discovery(self.contextio, {})
 
-    def test_constructor_sets_attributes_on_object(self):
-        self.assertEqual("fake@email.com", self.discovery.email)
-        self.assertEqual(True, self.discovery.found)
-        self.assertEqual("catpants", self.discovery.type)
-        self.assertEqual({"foo": "bar"}, self.discovery.imap)
-        self.assertEqual(["some.url"], self.discovery.documentation)
+    def test_constructor_creates_discovery_object_with_all_attributes_in_keys_list(self):
+        self.assertTrue(hasattr(self.discovery, 'email'))
+        self.assertTrue(hasattr(self.discovery, 'found'))
+        self.assertTrue(hasattr(self.discovery, 'type'))
+        self.assertTrue(hasattr(self.discovery, 'imap'))
+        self.assertTrue(hasattr(self.discovery, 'documentation'))

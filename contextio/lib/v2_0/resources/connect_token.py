@@ -1,3 +1,5 @@
+import logging
+
 from contextio.lib.v2_0.resources.base_resource import BaseResource
 
 class ConnectToken(BaseResource):
@@ -17,6 +19,7 @@ class ConnectToken(BaseResource):
         last_name: string - Last name specified on token creation
         account: Account object
     """
+    resource_id = "token"
     keys = ['token', 'email', 'created', 'used', 'expires', 'callback_url',
         'first_name', 'last_name', 'account']
 
@@ -71,7 +74,6 @@ class ConnectToken(BaseResource):
             Bool
         """
         return super(ConnectToken, self).delete()
-
 
     def put(self):
         logging.info("This method is not implemented")

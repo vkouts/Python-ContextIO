@@ -54,11 +54,13 @@ class WebHook(BaseResource):
         filter_from_domain: string - Check for new messages sent from a given
             domain. Also accepts a comma delimited list of domains.
     """
-    keys = ['callback_url', 'failure_notif_url', 'active', 'failure',
-        'webhook_id', 'filter_to', 'filter_from', 'filter_cc',
-        'filter_subject', 'filter_thread', 'filter_new_important',
-        'filter_file_name', 'filter_folder_added', 'filter_folder_removed',
-        'filter_to_domain', 'filter_from_domain'
+    resource_id = "webhook_id"
+    keys = [
+        "callback_url", "failure_notif_url", "active", "failure",
+        "webhook_id", "filter_to", "filter_from", "filter_cc",
+        "filter_subject", "filter_thread", "filter_new_important",
+        "filter_file_name", "filter_folder_added", "filter_folder_removed",
+        "filter_to_domain", "filter_from_domain"
     ]
 
     def __init__(self, parent, defn):

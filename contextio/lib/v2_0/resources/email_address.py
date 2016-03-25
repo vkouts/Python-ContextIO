@@ -11,7 +11,8 @@ class EmailAddress(BaseResource):
         primary: integer - whether or not this address is the primary one
             associated to the account. 1 for yes, 0 for no.
     """
-    keys = ['email', 'validated', 'primary']
+    resource_id = "email"
+    keys = ["email", "validated", "primary"]
 
     def __init__(self, parent, definition):
         """Constructor.
@@ -43,7 +44,7 @@ class EmailAddress(BaseResource):
         """
         return super(EmailAddress, self).get()
 
-    def post(self, **params):
+    def post(self, primary=None, **params):
         """Modifies a given email address.
 
         POST method for the email_addresses resource.
@@ -59,8 +60,8 @@ class EmailAddress(BaseResource):
             Bool
         """
         # update EmailAddress object with new values
-        if params.get("primary") is not None:
-            self.primary = params["primary"]
+        if primary is not None:
+            self.primary = int(primary)
 
         return super(EmailAddress, self).post(params=params, all_args=["primary"])
 

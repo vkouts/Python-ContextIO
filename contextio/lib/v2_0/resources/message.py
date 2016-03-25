@@ -31,6 +31,7 @@ class Message(BaseResource):
         flags: dict - the flags for this message
         folders: dict - the folders this message is in
     """
+    resource_id = "message_id"
     keys = ['date', 'date_indexed', 'addresses', 'person_info',
         'email_message_id', 'message_id', 'gmail_message_id',
         'gmail_thread_id', 'files', 'subject', 'folders', 'sources']
@@ -153,8 +154,7 @@ class Message(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri('', method='DELETE')
-        return bool(status['success'])
+        return super(Message, self).delete()
 
     def get_body(self, **params):
         """Fetch the message body of a given email.
@@ -185,9 +185,9 @@ class Message(BaseResource):
               }
             ]
         """
-        all_args = ['type', ]
+        all_args = ['type']
         params = helpers.sanitize_params(params, all_args)
-        self.body = self._request_uri('body', params=params)
+        self.body = self._request_uri("body", params=params)
         return self.body
 
     def get_flags(self):
@@ -214,7 +214,7 @@ class Message(BaseResource):
                   as "junk" mail,
             }
         """
-        self.flags = self._request_uri('flags')
+        self.flags = self._request_uri("flags")
         return self.flags
 
     def post_flag(self, **params):
@@ -241,14 +241,14 @@ class Message(BaseResource):
         Returns:
             Bool, after setting self.flags.
         """
-        all_args = ['seen', 'answered', 'flagged', 'deleted', 'draft']
+        all_args = ["seen", "answered", "flagged", "deleted", "draft"]
         params = helpers.sanitize_params(params, all_args)
 
-        data = self._request_uri('flags', method='POST', params=params)
-        status = bool(data['success'])
+        data = self._request_uri("flags", method="POST", params=params)
+        status = bool(data["success"])
 
         if status:
-            self.flags = data['flags']
+            self.flags = data["flags"]
 
         return status
 
@@ -296,8 +296,7 @@ class Message(BaseResource):
         """
         all_args = ['add', 'remove', 'add[]', 'remove[]']
         params = helpers.sanitize_params(params, all_args)
-        status = self._request_uri('folders', method='POST', params=params)
-        return bool(status['success'])
+        return super(Message, self).post("folders", params=params)
 
     def put_folders(self, body):
         """Set folders a message should be in.
@@ -319,7 +318,7 @@ class Message(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri('folders', method='PUT', body=body)
+        status = self._request_uri("folders", method="PUT", body=body)
         status = bool(status['success'])
 
         if status:
@@ -346,7 +345,7 @@ class Message(BaseResource):
               ...
             }
         """
-        all_args = ['raw', ]
+        all_args = ['raw']
         params = helpers.sanitize_params(params, all_args)
         self.headers = self._request_uri('headers', params=params)
         return self.headers
@@ -396,26 +395,23 @@ class Message(BaseResource):
                 response
         """
         all_args = [
-            'include_body', 'include_headers', 'include_flags', 'body_type',
-            'limit', 'offset'
+            "include_body", "include_headers", "include_flags", "body_type",
+            "limit", "offset"
         ]
         params = helpers.sanitize_params(params, all_args)
 
-        data = self._request_uri('thread', params=params)
+        data = self._request_uri("thread", params=params)
 
         # try to find the gmail_thread_id
-        if data['messages']:
-            if data['messages'][0]['gmail_thread_id']:
-                data['gmail_thread_id'] = 'gm-%s' % (
-                    data['messages'][0]['gmail_thread_id']
-                )
+        gmail_thread_id = None
+        messages = data.get("messages")
+        if messages is not None:
+            first_message = messages[0]
+            gmail_thread_id = first_message.get("gmail_thread_id")
+            if gmail_thread_id:
+                data["gmail_thread_id"] = "gm-{0}".format(gmail_thread_id)
 
-        # if we have a gmail_thread_id, then return a thread object, if not
-        # return the raw data
-        if 'gmail_thread_id' in data:
-            self.thread = Thread(self.parent, data)
-        else:
-            self.thread = data
+        self.thread = Thread(self.parent, data) if gmail_thread_id else data
 
         # if we have the subject, set thread.subject
         if self.subject and self.thread:

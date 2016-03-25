@@ -16,6 +16,7 @@ class Folder(BaseResource):
         nb_unseen_messages: integer - Number of unread messages in this folder
             (present only if include_extended_counts is set to 1)
     """
+    resource_id = "name"
     keys = ['name', 'attributes', 'delim', 'nb_messages', 'nb_unseen_messages']
 
     def __init__(self, parent, defn):
@@ -57,10 +58,10 @@ class Folder(BaseResource):
         Returns:
             Bool
         """
-        all_args = ['delim', ]
+        all_args = ["delim"]
         params = helpers.sanitize_params(params, all_args)
-        status = self._request_uri('', method='PUT', params=params)
-        return bool(status['success'])
+        status = self._request_uri(method="PUT", params=params)
+        return bool(status["success"])
 
     def post(self):
         logging.info("This method is not implemented")
@@ -78,8 +79,7 @@ class Folder(BaseResource):
         Returns:
             Bool
         """
-        status = self._request_uri('', method='DELETE')
-        return bool(status['success'])
+        return super(Folder, self).delete()
 
     def get_messages(self, **params):
         """Get current listings of email messages in a given folder.

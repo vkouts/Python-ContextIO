@@ -29,9 +29,11 @@ class Account(BaseResource):
         sources: list - email accounts where this account gets data from
         resource_url: string - URI which identifies this account
     """
-    keys = ['id', 'username', 'created', 'suspended', 'email_addresses',
-        'first_name', 'last_name', 'password_expired', 'sources',
-        'resource_url']
+    resource_id = "id"
+    keys = [
+        "id", "username", "created", "suspended", "email_addresses", "first_name", "last_name",
+        "password_expired", "sources", "resource_url"
+    ]
 
     def __init__(self, parent, definition):
         """Constructor.
@@ -145,6 +147,7 @@ class Account(BaseResource):
         ]
 
         contacts = super(Account, self).get(uri="contacts", return_bool=False, params=params, all_args=all_args)
+
         return [
             Contact(self, obj) for obj in contacts.get('matches')
         ]
@@ -220,17 +223,14 @@ class Account(BaseResource):
             A list of File objects
         """
         all_args = [
-            'file_name', 'file_size_min', 'file_size_max', 'email',
-            'to', 'from', 'cc', 'bcc',
-            'date_before', 'date_after', 'indexed_before', 'indexed_after',
-            'source', 'limit', 'offset'
+            'file_name', 'file_size_min', 'file_size_max', 'email', 'to', 'from', 'cc', 'bcc',
+            'date_before', 'date_after', 'indexed_before', 'indexed_after', 'source', 'limit',
+            'offset'
         ]
 
         params = helpers.sanitize_params(params, all_args)
 
-        return [File(self, obj) for obj in self._request_uri(
-            'files', params=params
-        )]
+        return [File(self, obj) for obj in self._request_uri('files', params=params)]
 
     def get_messages(self, **params):
         """List email messages for an account.

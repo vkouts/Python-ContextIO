@@ -2,6 +2,8 @@ import logging
 
 from contextio.lib.v2_0 import helpers
 from contextio.lib.v2_0.resources.base_resource import BaseResource
+from contextio.lib.v2_0.resources.connect_token import ConnectToken
+from contextio.lib.v2_0.resources.folder import Folder
 
 class Source(BaseResource):
     """Class to represent the Source resource.
@@ -25,20 +27,19 @@ class Source(BaseResource):
             and another one for encrypted connection (see use-ssl parameter
             above)
     """
-    keys = ['username', 'status', 'type', 'label',
-        'use_ssl', 'resource_url', 'server', 'port'
-    ]
+    resource_id = "label"
+    keys = ["username", "status", "type", "label", "use_ssl", "resource_url", "server", "port"]
 
-    def __init__(self, parent, defn):
+    def __init__(self, parent, definition):
         """Constructor.
 
         Required Arguments:
             parent: Account object - parent is an Account object.
-            defn: a dictionary of parameters. The 'label' parameter is
+            definition: a dictionary of parameters. The 'label' parameter is
                 required to make method calls.
         """
 
-        super(Source, self).__init__(parent, 'sources/{label}',  defn)
+        super(Source, self).__init__(parent, "sources/{label}",  definition)
 
     def get(self):
         """Get parameters and status for an IMAP source.
@@ -106,12 +107,7 @@ class Source(BaseResource):
             'provider_consumer_key', 'status_callback_url'
         ]
 
-        status = super(Source, self).post(return_bool=False, params=params, all_args=all_args)
-
-        if "force_status_check" in params:
-            return bool(status['status'])
-
-        return bool(status['success'])
+        return super(Source, self).post(params=params, all_args=all_args)
 
     def delete_connect_token(self, token_id):
         """Removes a connect token created for an IMAP source.
@@ -197,12 +193,10 @@ class Source(BaseResource):
         Returns:
             A list of Folder objects.
         """
-        all_args = ['include_extended_counts', ]
+        all_args = ["include_extended_counts"]
         params = helpers.sanitize_params(params, all_args)
 
-        return [Folder(self, obj) for obj in self._request_uri(
-            'folders', params=params
-        )]
+        return [Folder(self, obj) for obj in self._request_uri("folders", params=params)]
 
     def get_sync(self):
         """Get sync status of a data source.
@@ -224,7 +218,7 @@ class Source(BaseResource):
                 }
             }
         """
-        return self._request_uri('sync')
+        return self._request_uri("sync")
 
     def post_sync(self):
         """Trigger a sync of a data source.

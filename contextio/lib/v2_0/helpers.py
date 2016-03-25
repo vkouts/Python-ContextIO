@@ -2,13 +2,7 @@ from datetime import datetime
 import logging
 import re
 
-class ArgumentError(Exception):
-    """Class to handle bad arguments."""
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return self.message
+from contextio.lib.v2_0.errors import ArgumentError
 
 def to_underscore(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)

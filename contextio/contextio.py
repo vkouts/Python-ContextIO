@@ -6,17 +6,6 @@ import six
 from rauth import OAuth1Session
 from requests.exceptions import HTTPError
 
-# if six.PY2:
-#     from urllib import urlencode, quote
-# else:
-#     from urllib.parse import urlencode, quote
-
-# # check to see if we can get json, or if we're on app engine
-# try:
-#     import json
-# except:
-#     from django.utils import simplejson as json
-
 from contextio.lib.v2_0 import helpers
 from contextio.lib.v2_0.resources.account import Account
 from contextio.lib.v2_0.resources.connect_token import ConnectToken
@@ -82,7 +71,7 @@ class ContextIO(object):
             elif self.debug == "log":
                 logging.debug(message)
 
-    def _request_uri(self, uri, method="GET", params={}, headers={}, body=""):
+    def _request_uri(self, uri="", method="GET", params={}, headers={}, body=""):
         """Assembles the request uri and calls the request method.
 
         Required Arguments:

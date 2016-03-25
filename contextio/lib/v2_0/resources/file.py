@@ -39,6 +39,7 @@ class File(BaseResource):
         gmail_thread_id: string - Gmail thread id the file is attached to
             (only present if source is a Gmail account)
         """
+    resource_id = "file_id"
     keys = ['size', 'type', 'subject', 'date', 'date_indexed', 'addresses',
         'person_info', 'file_name', 'file_name_structure', 'body_section',
         'file_id', 'supports_preview', 'is_embedded', 'content_disposition',
@@ -112,5 +113,5 @@ class File(BaseResource):
         Returns:
             A list of File objects.
         """
-        return [File(self, obj) for obj in self._request_uri('related')]
+        return [File(self, obj) for obj in self._request_uri("related")]
 

@@ -1,6 +1,4 @@
 from mock import patch
-import json
-import httpretty
 import unittest
 
 from contextio.contextio import ContextIO
@@ -36,25 +34,6 @@ class TestFileResource(unittest.TestCase):
         self.assertTrue(hasattr(self.file, "gmail_message_id"))
         self.assertTrue(hasattr(self.file, "gmail_thread_id"))
 
-    @httpretty.activate
-    def test_get_updates_attributes_and_returns_True(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/accounts/fake_id/files/fake_file_id/",
-            status=200,
-            body=json.dumps({
-                "file_id": "fake_file_id",
-                "subject": "foobar"
-            })
-        )
-
-        self.assertIsNone(self.file.subject)
-
-        file_updated = self.file.get()
-
-        self.assertTrue(file_updated)
-        self.assertEqual("foobar", self.file.subject)
-
     @patch("contextio.lib.v2_0.resources.file.File._request_uri")
     def test_get_content_calls_request_uri_with_correct_arguments(self, mock_request):
         file = File(self.account, {"file_id": "fake_file_id"})
@@ -71,16 +50,9 @@ class TestFileResource(unittest.TestCase):
 
         mock_request.assert_called_with("content", headers={"Accept": "text/uri-list"})
 
-    @httpretty.activate
-    def test_get_related_returns_a_list_of_File_objects(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/accounts/fake_id/files/fake_file_id/related",
-            status=200,
-            body=json.dumps([{
-                "file_id": "related_file_id",
-            }])
-        )
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_related_returns_a_list_of_File_objects(self, mock_request):
+        mock_request.return_value = [{"file_id": "related_file_id"}]
 
         related_files = self.file.get_related()
 

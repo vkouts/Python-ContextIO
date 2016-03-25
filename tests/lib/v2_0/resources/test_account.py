@@ -1,10 +1,9 @@
 from mock import patch
-import json
-import httpretty
 import unittest
 
 from contextio.contextio import ContextIO
 from contextio.lib.v2_0.resources.account import Account
+from contextio.lib.v2_0.resources.contact import Contact
 from contextio.lib.v2_0.resources.connect_token import ConnectToken
 from contextio.lib.v2_0.resources.email_address import EmailAddress
 from contextio.lib.v2_0.resources.message import Message
@@ -20,180 +19,96 @@ class TestAccountResource(unittest.TestCase):
         self.account = Account(self.contextio, {"id": "fake_id"})
 
         self.uri = "https://api.context.io/2.0/accounts/fake_id/"
-    @httpretty.activate
-    def test_post_updates_first_and_last_name(self):
-        httpretty.register_uri(
-            httpretty.POST,
-            "https://api.context.io/2.0/accounts/fake_id/",
-            status=200,
-            body=json.dumps({
-                "success": True
-            }))
 
-        account_updated = self.account.post(first_name="Leeroy", last_name="Jenkins")
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource.post")
+    def test_post_updates_first_and_last_name(self, mock_post):
+        mock_post.return_value = True
+        params = {
+            "first_name": "Leeroy",
+            "last_name": "Jenkins"
+        }
 
-        self.assertTrue(account_updated)
+        response = self.account.post(**params)
+
         self.assertEqual(self.account.first_name, "Leeroy")
         self.assertEqual(self.account.last_name, "Jenkins")
+        mock_post.assert_called_with(all_args=['first_name', 'last_name'], params=params)
+        self.assertTrue(response)
 
-    @httpretty.activate
-    def test_get_connect_tokens_returns_list_of_connect_tokens(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/accounts/fake_id/connect_tokens",
-            status=200,
-            body=json.dumps([
-                {
-                    "token": "fake_token",
-                    "email": "fake@email.com",
-                    "created": 1458569698,
-                    "used": 1458569718,
-                    "serverLabel": "server.label",
-                    "callback_url": "https://some.url",
-                    "first_name": "Fake",
-                    "last_name": "Name",
-                    "expires": False,
-                    "account" : {
-                        "id": "fake_account_id"
-                    }
-                }
-            ])
-        )
-
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_connect_tokens_returns_list_of_connect_tokens(self, mock_request):
+        mock_request.return_value = [{"token": "fake_token", "account": {"id": "foobar"}}]
 
         account_connect_tokens = self.account.get_connect_tokens()
-        connect_token = account_connect_tokens[0]
 
         self.assertEqual(1, len(account_connect_tokens))
-        self.assertIsInstance(connect_token, ConnectToken)
-        self.assertIsInstance(connect_token.account, Account)
+        self.assertIsInstance(account_connect_tokens[0], ConnectToken)
+        self.assertIsInstance(account_connect_tokens[0].account, Account)
 
-    @httpretty.activate
-    def test_get_contacts_returns_list_of_contacts(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/accounts/fake_id/connect_tokens",
-            status=200,
-            body=json.dumps([
-                {
-                    "token": "fake_token",
-                    "email": "fake@email.com",
-                    "created": 1458569698,
-                    "used": 1458569718,
-                    "serverLabel": "server.label",
-                    "callback_url": "https://some.url",
-                    "first_name": "Fake",
-                    "last_name": "Name",
-                    "expires": False,
-                    "account" : {
-                        "id": "fake_account_id"
-                    }
-                }
-            ])
-        )
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource.get")
+    def test_get_contacts_returns_list_of_contacts(self, mock_get):
+        mock_get.return_value = {"matches": [{"email": "foo@bar.com"}]}
 
+        account_contacts = self.account.get_contacts()
 
-        account_connect_tokens = self.account.get_connect_tokens()
-        connect_token = account_connect_tokens[0]
+        self.assertEqual(1, len(account_contacts))
+        self.assertIsInstance(account_contacts[0], Contact)
 
-        self.assertEqual(1, len(account_connect_tokens))
-        self.assertIsInstance(connect_token, ConnectToken)
-        self.assertIsInstance(connect_token.account, Account)
-
-    @httpretty.activate
-    def test_get_email_addresses_returns_list_of_EmailAddresses(self):
-        httpretty.register_uri(httpretty.GET, self.uri+ "email_addresses", status=200,
-            body=json.dumps([{"email": "fake_token"}]))
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_email_addresses_returns_list_of_EmailAddresses(self, mock_request):
+        mock_request.return_value = [{"email": "fake_token"}]
 
         response = self.account.get_email_addresses()
 
         self.assertIsInstance(response[0], EmailAddress)
 
-    @httpretty.activate
-    def test_get_files_returns_list_of_Files(self):
-        httpretty.register_uri(httpretty.GET, self.uri+ "files", status=200,
-            body=json.dumps([{"file_id": "foobar"}]))
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_files_returns_list_of_Files(self, mock_request):
+        mock_request.return_value = [{"file_id": "foobar"}]
 
         response = self.account.get_files()
 
         self.assertIsInstance(response[0], File)
 
-    @httpretty.activate
-    def test_get_messages_returns_list_of_Messages(self):
-        httpretty.register_uri(httpretty.GET, self.uri + "messages", status=200,
-            body=json.dumps([{"message_id": "foobar"}]))
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_messages_returns_list_of_Messages(self, mock_request):
+        mock_request.return_value = [{"message_id": "foobar"}]
 
         response = self.account.get_messages()
 
         self.assertIsInstance(response[0], Message)
 
-    @httpretty.activate
-    def test_get_sources_returns_list_of_Sources(self):
-        httpretty.register_uri(httpretty.GET, self.uri + "sources", status=200,
-            body=json.dumps([{"label": "foobar"}]))
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_sources_returns_list_of_Sources(self, mock_request):
+        mock_request.return_value = [{"label": "foobar"}]
 
         response = self.account.get_sources()
 
         self.assertIsInstance(response[0], Source)
 
-    @httpretty.activate
-    def test_get_sync_returns_a_dictionary(self):
-        httpretty.register_uri(httpretty.GET, self.uri + "sync", status=200,
-            body=json.dumps({"foo": "bar"}))
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_sync_returns_a_dictionary(self, mock_request):
+        mock_request.return_value = {"foo": "bar"}
 
         response = self.account.get_sync()
 
         self.assertIsInstance(response, dict)
 
-    @httpretty.activate
-    def test_get_threads_returns_list_of_Threads(self):
-        httpretty.register_uri(httpretty.GET, self.uri + "threads", status=200,
-            body=json.dumps(["foo/bar"]))
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_threads_returns_list_of_Threads(self, mock_request):
+        mock_request.return_value = ["foo/bar"]
 
         response = self.account.get_threads()
 
         self.assertIsInstance(response[0], Thread)
 
-    @httpretty.activate
-    def test_get_webhooks_returns_list_of_WebHooks(self):
-        httpretty.register_uri(httpretty.GET, self.uri + "webhooks", status=200,
-            body=json.dumps([{"webhook_id": "foobar"}]))
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
+    def test_get_webhooks_returns_list_of_WebHooks(self, mock_request):
+        mock_request.return_value = [{"webhook_id": "foobar"}]
 
         response = self.account.get_webhooks()
 
         self.assertIsInstance(response[0], WebHook)
-
-    @httpretty.activate
-    def test_get_email_addresses_returns_list_of_email_addresses(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/accounts/fake_id/connect_tokens",
-            status=200,
-            body=json.dumps([
-                {
-                    "token": "fake_token",
-                    "email": "fake@email.com",
-                    "created": 1458569698,
-                    "used": 1458569718,
-                    "serverLabel": "server.label",
-                    "callback_url": "https://some.url",
-                    "first_name": "Fake",
-                    "last_name": "Name",
-                    "expires": False,
-                    "account" : {
-                        "id": "fake_account_id"
-                    }
-                }
-            ])
-        )
-
-
-        account_connect_tokens = self.account.get_connect_tokens()
-        connect_token = account_connect_tokens[0]
-
-        self.assertEqual(1, len(account_connect_tokens))
-        self.assertIsInstance(connect_token, ConnectToken)
-        self.assertIsInstance(connect_token.account, Account)
 
     def test_post_connect_token_requires_callback_url(self):
         with self.assertRaises(ArgumentError):
@@ -261,7 +176,6 @@ class TestAccountResource(unittest.TestCase):
         response = self.account.post_source()
 
         self.assertFalse(response)
-
 
     @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
     def test_post_sync_calls_request_uri_with_correct_args(self, mock_request):

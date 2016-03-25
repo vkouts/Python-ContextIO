@@ -1,5 +1,4 @@
-import json
-import httpretty
+from mock import patch
 import unittest
 
 from contextio.contextio import ContextIO
@@ -16,61 +15,34 @@ class TestEmailAddressResource(unittest.TestCase):
         })
 
     def test_constructor_sets_attributes_on_object(self):
-        self.assertEqual("fake@email.com", self.email_address.email)
-        self.assertEqual(1234567890, self.email_address.validated)
-        self.assertEqual(1, self.email_address.primary)
+        self.assertTrue(hasattr(self.email_address, "email"))
+        self.assertTrue(hasattr(self.email_address, "validated"))
+        self.assertTrue(hasattr(self.email_address, "primary"))
+
 
     def test_constructor_allows_email_address_in_definition(self):
-        email_address = EmailAddress(self.contextio, {
-            "email_address": "fake@email.com",
-            "validated": 1234567890,
-            "primary": 1
-        })
+        email_address = EmailAddress(self.contextio, {"email_address": "fake@email.com"})
 
         self.assertEqual("fake@email.com", email_address.email)
-        self.assertEqual(1234567890, email_address.validated)
-        self.assertEqual(1, email_address.primary)
 
-    @httpretty.activate
-    def test_get_updates_object_with_data_from_api(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/email_addresses/fake@email.com/",
-            status=200,
-            body=json.dumps({
-                "email": "new@email.com",
-            }))
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource.post")
+    def test_post_updates_primary_attribute_in_memory(self, mock_post):
+        self.assertEqual(self.email_address.primary, 1)
 
-        email_address_updated = self.email_address.get()
+        self.email_address.post(primary=0)
 
-        self.assertTrue(email_address_updated)
-        self.assertEqual("new@email.com", self.email_address.email)
-
-    @httpretty.activate
-    def test_delete_removes_email_address(self):
-        httpretty.register_uri(
-            httpretty.DELETE,
-            "https://api.context.io/2.0/email_addresses/fake@email.com/",
-            status=200,
-            body=json.dumps({
-                "success": True
-            }))
-
-        email_address_deleted = self.email_address.delete()
-
-        self.assertTrue(email_address_deleted)
-
-    @httpretty.activate
-    def test_post_updates_email_address(self):
-        httpretty.register_uri(
-            httpretty.POST,
-            "https://api.context.io/2.0/email_addresses/fake@email.com/",
-            status=200,
-            body=json.dumps({
-                "success": True
-            }))
-
-        email_address_updated = self.email_address.post(primary=0)
-
-        self.assertTrue(email_address_updated)
         self.assertEqual(self.email_address.primary, 0)
+
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource.post")
+    def test_post_attempts_to_convert_string_input_to_int(self, mock_post):
+        self.assertEqual(self.email_address.primary, 1)
+
+        self.email_address.post(primary="0")
+
+        self.assertEqual(self.email_address.primary, 0)
+
+    def test_post_throws_error_if_unable_to_parse_int(self):
+        self.assertEqual(self.email_address.primary, 1)
+
+        with self.assertRaises(ValueError):
+            self.email_address.post(primary="not_integer")

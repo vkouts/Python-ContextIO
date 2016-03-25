@@ -24,6 +24,7 @@ class Discovery(BaseResource):
         documentation: list - List of documentation pages that may be useful
             for end-users for this specific IMAP provider
     """
+
     keys = ['email', 'found', 'type', 'imap', 'documentation']
 
     def __init__(self, parent, defn):
