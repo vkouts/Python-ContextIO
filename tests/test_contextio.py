@@ -4,8 +4,9 @@ import unittest
 from contextio.contextio import ContextIO
 from requests.exceptions import HTTPError
 from rauth import OAuth1Session
-import httpretty
 
+
+import contextio.lib.v2_0.errors as errors
 from contextio.lib.v2_0.resources.account import Account
 from contextio.lib.v2_0.resources.connect_token import ConnectToken
 from contextio.lib.v2_0.resources.discovery import Discovery
@@ -111,9 +112,9 @@ class TestContextIO(unittest.TestCase):
             params={}
         )
 
-    @httpretty.activate
-    def test_request_uri_raises_HTTPError_if_status_not_between_200_and_300(self):
-        httpretty.register_uri(httpretty.GET, "https://api.context.io/2.0/catpants", status=500)
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_request_uri_raises_HTTPError_if_status_not_between_200_and_300(self, mock_request):
+        mock_request.side_effect = HTTPError
 
         with self.assertRaises(HTTPError):
             self.contextio._request_uri("catpants")
@@ -143,12 +144,12 @@ class TestContextIO(unittest.TestCase):
         response = self.contextio._request_uri("catpants")
         self.assertEqual("This is some text", response)
 
-    @httpretty.activate
-    def test_request_uri_returns_json(self):
-        httpretty.register_uri(httpretty.GET, "https://api.context.io/2.0/catpants",
-            body=json.dumps({"foo": "bar"}), status=200)
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_request_uri_returns_json(self, mock_request):
+        mock_request.return_value = ({"foo": "bar"})
 
         response = self.contextio._request_uri("catpants")
+
         self.assertEqual({"foo": "bar"}, response)
 
     @mock.patch("contextio.contextio.pkg_resources")
@@ -172,248 +173,91 @@ class TestContextIO(unittest.TestCase):
             headers={'user-agent': 'contextio/some_version/python-lib-v1.0.0'}
         )
 
-    @httpretty.activate
-    def test_get_accounts_returns_list_of_Account_resources(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/accounts",
-            status=200,
-            body=json.dumps([{
-                "created": 1458569716,
-                "username": "fake_username",
-                "suspended": 0,
-                "id": "some_id",
-                "email_addresses": [
-                  "fake@email.com"
-                ],
-                "first_name": "Leeroy",
-                "last_name": "Jenkins",
-                "password_expired": 0,
-                "sources": [
-                  {
-                    "server": "fake.imap.server",
-                    "label": "some-label",
-                    "username": "some@username.com",
-                    "port": 993,
-                    "authentication_type": "oauth2",
-                    "use_ssl": True,
-                    "status": "OK",
-                    "type": "imap",
-                    "resource_url": "https://some.url"
-                  }
-                ],
-                "resource_url": "https://some.url"
-              }])
-        )
-
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_get_accounts_returns_list_of_Account_resources(self, mock_request):
+        mock_request.return_value = {"id": "some_id"}
         accounts = self.contextio.get_accounts()
 
         self.assertEqual(1, len(accounts))
         self.assertIsInstance(accounts[0], Account)
 
-    @httpretty.activate
-    def test_post_account_returns_Account_object(self):
-        httpretty.register_uri(
-            httpretty.POST,
-            "https://api.context.io/2.0/accounts",
-            status=200,
-            body=json.dumps({
-                "success": True,
-                "id": "fake_id",
-                "resource_url": "https://some_url"
-            })
-        )
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_post_account_returns_Account_object(self, mock_request):
+        mock_request.return_value = {"id": "some_id"}
 
         account = self.contextio.post_account(email="fake@email.com")
 
         self.assertIsInstance(account, Account)
 
-    @httpretty.activate
-    def test_get_connect_tokens_returns_list_of_ConnectToken_resources_without_token(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/connect_tokens",
-            status=200,
-            body=json.dumps([
-                {
-                    "token": "fake_token",
-                    "email": "fake_email",
-                    "created": 1458569698,
-                    "used": 1458569718,
-                    "serverLabel": "server_label",
-                    "callback_url": "https://some_url",
-                    "first_name": "Fake",
-                    "last_name": "Name",
-                    "account": {
-                        "id": "account_id",
-                        "username": "fake_username",
-                        "created": 1458569716,
-                        "suspended": 0,
-                        "email_addresses": [
-                            "fake_email"
-                        ],
-                    "first_name": "Fake",
-                    "last_name": "Name",
-                    "password_expired": 0,
-                    "sources": [
-                        {
-                            "server": "fake.imap.server",
-                            "label": "fake-label",
-                            "username": "fake_username",
-                            "port": 993,
-                            "authentication_type": "oauth2",
-                            "use_ssl": True,
-                            "sync_flags": False,
-                            "type": "imap",
-                            "resource_url": "https://some.url"
-                        }
-                    ],
-                    "resource_url": "https://some.url"
-                    },
-                    "expires": False,
-                    "resource_url": "https://some.url"
-                }
-            ])
-        )
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_get_connect_tokens_returns_list_of_ConnectToken_resources_without_token(self, mock_request):
+        mock_request.return_value = [{"token": "fake_token", "account": {"id": "account_id"}}]
 
         connect_tokens = self.contextio.get_connect_tokens()
 
         self.assertEqual(1, len(connect_tokens))
         self.assertIsInstance(connect_tokens[0], ConnectToken)
 
-    @httpretty.activate
-    def test_get_connect_tokens_returns_dictionary_if_token_is_provided(self):
-        expected_connect_token = {
-            "token": "fake_token",
-            "email": "fake_email",
-            "created": 1458569698,
-            "used": 1458569718,
-            "serverLabel": "server_label",
-            "callback_url": "https://some_url",
-            "first_name": "Fake",
-            "last_name": "Name",
-            "account": {
-                "id": "account_id",
-                "username": "fake_username",
-                "created": 1458569716,
-                "suspended": 0,
-                "email_addresses": [
-                    "fake_email"
-                ],
-            "first_name": "Fake",
-            "last_name": "Name",
-            "password_expired": 0,
-            "sources": [
-                {
-                    "server": "fake.imap.server",
-                    "label": "fake-label",
-                    "username": "fake_username",
-                    "port": 993,
-                    "authentication_type": "oauth2",
-                    "use_ssl": True,
-                    "sync_flags": False,
-                    "type": "imap",
-                    "resource_url": "https://some.url"
-                }
-            ],
-            "resource_url": "https://some.url"
-            },
-            "expires": False,
-            "resource_url": "https://some.url"
-        }
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/connect_tokens/fake_token",
-            status=200,
-            body=json.dumps(expected_connect_token)
-        )
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_get_connect_tokens_returns_dictionary_if_token_is_provided(self, mock_request):
+        mock_request.return_value = {"token": "fake_token"}
 
         connect_token = self.contextio.get_connect_tokens(token="fake_token")
 
-        self.assertEqual(expected_connect_token, connect_token)
+        self.assertEqual({"token": "fake_token"}, connect_token)
 
-    @httpretty.activate
-    def test_post_connect_token_returns_dictionary(self):
-        expected_response = {
-          "success": True,
-          "token": "fake_token",
-          "resource_url": "https://some.url",
-          "browser_redirect_url": "https://some.url"
-        }
-        httpretty.register_uri(
-            httpretty.POST,
-            "https://api.context.io/2.0/connect_tokens",
-            status=200,
-            body=json.dumps(expected_response)
-        )
+
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_post_connect_token_requires_callback_url(self, mock_request):
+        mock_request.return_value = {"token": "fake_token"}
+
+        with self.assertRaises(errors.ArgumentError):
+            self.contextio.post_connect_token()
+
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_post_connect_token_returns_dictionary(self, mock_request):
+        mock_request.return_value = {"token": "fake_token"}
 
         connect_token = self.contextio.post_connect_token(callback_url="http://some.callback.url")
 
-        self.assertEqual(expected_response, connect_token)
+        self.assertEqual({"token": "fake_token"}, connect_token)
 
-    @httpretty.activate
-    def test_get_discovery_returns_discovery_object(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/discovery",
-            status=200,
-            body=json.dumps({
-                "email": "fake@email.com",
-                "found": True,
-                "resource_url": "https://some.url",
-                "type": "some_type",
-                "imap": {
-                    "server": "some.imap.server",
-                    "username": "some_username",
-                    "port": 993,
-                    "use_ssl": True,
-                    "oauth": True
-                },
-                "documentation": [ ]
-            })
-        )
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_get_discovery_returns_discovery_object(self, mock_request):
+        mock_request.return_value = {"email": "fake@email.com"}
+
 
         discovery = self.contextio.get_discovery(email="fake@email.com")
 
         self.assertIsInstance(discovery, Discovery)
 
-    @httpretty.activate
-    def test_get_oauth_providers_returns_list_of_OauthProvider_objects(self):
-        httpretty.register_uri(
-            httpretty.GET,
-            "https://api.context.io/2.0/oauth_providers",
-            status=200,
-            body=json.dumps([
-                {
-                    "type": "VALIDOAUTHTYPE",
-                    "provider_consumer_key": "1234",
-                    "provider_consumer_secret": "1234",
-                    "resource_url": "https://some.url"
-                }
-            ])
-        )
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_get_discovery_requires_email_argument(self, mock_request):
+        with self.assertRaises(errors.ArgumentError):
+            self.contextio.get_discovery()
+
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_get_oauth_providers_returns_list_of_OauthProvider_objects(self, mock_request):
+        mock_request.return_value = [{"provider_consumer_key": "1234"}]
 
         oauth_providers = self.contextio.get_oauth_providers()
 
         self.assertEqual(1, len(oauth_providers))
         self.assertIsInstance(oauth_providers[0], OauthProvider)
 
-    @httpretty.activate
-    def test_post_oauth_provider_returns_dictionary(self):
-        expected_response = {
-          "success": True,
-          "provider_consumer_key": "123",
-          "resource_url": "https://some.url"
-        }
-        httpretty.register_uri(
-            httpretty.POST,
-            "https://api.context.io/2.0/oauth_providers",
-            status=200,
-            body=json.dumps(expected_response)
-        )
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_post_oauth_provider_returns_dictionary(self, mock_request):
+        mock_request.return_value = {"provider_consumer_key": "123"}
 
-        oauth_provider = self.contextio.post_oauth_provider(
-            type="VALIDOAUTHTYPE", provider_consumer_key="1234", provider_consumer_secret="1234")
+        oauth_provider = self.contextio.post_oauth_provider(type="VALIDOAUTHTYPE", provider_consumer_key="1234", provider_consumer_secret="1234")
 
-        self.assertEqual(expected_response, oauth_provider)
+        self.assertEqual({"provider_consumer_key": "123"}, oauth_provider)
+
+    @mock.patch("contextio.contextio.ContextIO._request_uri")
+    def test_post_oauth_provider_requires_type_provider_key_and_provider_secret(self, mock_request):
+        mock_request.return_value = {"provider_consumer_key": "123"}
+
+        with self.assertRaises(errors.ArgumentError):
+            self.contextio.post_oauth_provider()
+
 
