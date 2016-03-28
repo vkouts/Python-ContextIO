@@ -1,2 +1,8 @@
 .idea/*
 *.pyc
+**/.DS_STORE
+
+# any files prefixed with ignore
+
+**/ignore*
+.coverage
