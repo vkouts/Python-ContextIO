@@ -167,14 +167,19 @@ class ContextIO(object):
         POST method for the accounts resource.
 
         You can optionally pass in the params to simultaneously add a source
-        with just this one call.
+        with just this one call. In order to accomplish this you must include all of the
+        required parameters to create a source AS WELL AS one of the following:
+            - the password for the source
+            - the provider_refresh_token AND provider_consumer_key
+
+            *see https://context.io/docs/2.0/accounts/sources#post for more information*
 
         Documentation: http://context.io/docs/2.0/accounts#post
 
         Required Arguments:
             email: string - The primary email address of the account holder.
             migrate_account_id: string - Existing user_id (from lite) you want
-            to migrate to 2.0. Either migrate_account_id or email must be specified
+               to migrate to 2.0. Either migrate_account_id or email must be specified
 
         Optional Arguments:
             first_name: string - First name of the account holder.
@@ -182,7 +187,7 @@ class ContextIO(object):
 
         If adding a source in the same call:
         Required Arguments:
-            server: string - Name of IP of the IMAP server, eg. imap.gmail.com
+            server: string - Name or IP of the IMAP server, eg. imap.gmail.com
             username: string - The username used to authenticate an IMAP
                 connection. On some servers, this is the same thing as
                 the primary email address.
@@ -230,16 +235,16 @@ class ContextIO(object):
         Returns:
             An Account object
         """
-        req_args = ['email', ]
-        all_args = ['email', 'migrate_account_id', 'first_name', 'last_name', 'server',
-            'username', 'use_ssl', 'port', 'type', 'origin_ip', 'expunge_on_deleted_flag',
-            'sync_all_folders', 'sync_folders', 'sync_flags', 'raw_file_list', 'password',
-            'provider_refresh_token', 'provider_consumer_key', 'callback_url', 'status_callback_url'
+        req_args = ["email"]
+        all_args = ["email", "migrate_account_id", "first_name", "last_name", "server",
+            "username", "use_ssl", "port", "type", "origin_ip", "expunge_on_deleted_flag",
+            "sync_all_folders", "sync_folders", "sync_flags", "raw_file_list", "password",
+            "provider_refresh_token", "provider_consumer_key", "callback_url", "status_callback_url"
         ]
 
         params = helpers.sanitize_params(params, all_args, req_args)
 
-        return Account(self, self._request_uri('accounts', method="POST", params=params))
+        return Account(self, self._request_uri("accounts", method="POST", params=params))
 
     def get_connect_tokens(self, **params):
         """Get a list of connect tokens created with your API key.

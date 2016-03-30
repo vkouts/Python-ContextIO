@@ -44,27 +44,27 @@ class Message(BaseResource):
     source = None
     thread = None
 
-    def __init__(self, parent, defn):
+    def __init__(self, parent, definition):
         """Constructor.
 
         Required Arguments:
             parent: Account object - parent is an Account object.
-            defn: a dictionary of parameters. The 'message_id' parameter is
+            definition: a dictionary of parameters. The 'message_id' parameter is
                 required to make method calls.
         """
 
-        super(Message, self).__init__(parent, 'messages/{message_id}', defn)
+        super(Message, self).__init__(parent, 'messages/{message_id}', definition)
 
-        if 'files' in defn:
-            self.files = [File(self.parent, file) for file in defn['files']]
+        if 'files' in definition:
+            self.files = [File(self.parent, file) for file in definition['files']]
 
         # some calls optionally return a message with some extra data
-        if 'body' in defn:
-            self.body = defn['body']
-        if 'flags' in defn:
-            self.flags = defn['flags']
-        if 'headers' in defn:
-            self.headers = defn['headers']
+        if 'body' in definition:
+            self.body = definition['body']
+        if 'flags' in definition:
+            self.flags = definition['flags']
+        if 'headers' in definition:
+            self.headers = definition['headers']
 
     def get(self, **params):
         """Get file, contact and other information about a given email message.
@@ -95,8 +95,10 @@ class Message(BaseResource):
         Returns:
             True if self is updated, else will throw a request error
         """
-        all_args = ['include_thread_size', 'include_body', 'include_headers',
-            'include_flags', 'body_type', 'include_source']
+        all_args = [
+            "include_thread_size", "include_body", "include_headers", "include_flags", "body_type",
+            "include_source"
+        ]
 
         return super(Message, self).get(params=params, all_args=all_args)
 

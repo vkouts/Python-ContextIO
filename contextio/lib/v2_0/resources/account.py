@@ -317,12 +317,12 @@ class Account(BaseResource):
         Returns:
             A list of Message objects.
         """
-        all_args = ['subject', 'email', 'to',
-            'sender', 'from_', 'cc', 'bcc', 'folder', 'date_before', 'date_after',
-            'indexed_before', 'indexed_after', 'include_thread_size', 'include_body', 'source',
-            'file_name', 'file_size_min', 'file_size_max', 'include_source',
-            'include_headers', 'include_flags', 'body_type', 'sort_order',
-            'limit', 'offset'
+        all_args = [
+            "subject", "email", "to", "sender", "from_", "cc", "bcc", "folder", "date_before",
+            "date_after", "indexed_before", "indexed_after", "include_thread_size", "include_body",
+            "source", "file_name", "file_size_min", "file_size_max", "include_source",
+            "include_headers", "include_flags", "body_type", "sort_order",
+            "limit", "offset"
         ]
 
         params = helpers.sanitize_params(params, all_args)

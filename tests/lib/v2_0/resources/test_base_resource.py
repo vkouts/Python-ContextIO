@@ -9,6 +9,9 @@ class MockResource(BaseResource):
     resource_id = "id"
     keys = ["id", "foo", "baz"]
 
+    def __init__(self, parent, definition):
+        super(MockResource, self).__init__(parent, "test/{id}", definition)
+
 
 class TestBaseResource(unittest.TestCase):
     @patch("contextio.lib.v2_0.resources.base_resource.logging.error")
@@ -27,7 +30,7 @@ class TestBaseResource(unittest.TestCase):
 
     def test_constructor_sets_attributes_from_class_keys_and_definition(self):
         mock_parent = Mock()
-        mock_resource = MockResource(mock_parent, "test/{id}", {"id": "fake_id", "foo": "bar"})
+        mock_resource = MockResource(mock_parent, {"id": "fake_id", "foo": "bar"})
 
         self.assertEqual("fake_id", mock_resource.id)
         self.assertEqual("bar", mock_resource.foo)
@@ -38,7 +41,7 @@ class TestBaseResource(unittest.TestCase):
     def test_constructor_raises_error_if_resource_id_not_in_definition(self):
         mock_parent = Mock()
         with self.assertRaises(MissingResourceId):
-            MockResource(mock_parent, "test/{id}", {"foo": "bar"})
+            MockResource(mock_parent, {"foo": "bar"})
 
 
     def test_uri_for_joins_arguments_with_base_uri(self):
@@ -51,7 +54,7 @@ class TestBaseResource(unittest.TestCase):
     def test_get_calls_init_on_itself_with_its_parent_object_and_request_result_as_arguments(self, mock_request):
         mock_parent = Mock()
         mock_request.return_value = {"id": "fake_id", "foo": "catpants"}
-        mock_resource = MockResource(mock_parent, "test/{id}", {"id": "fake_id", "foo": "bar"})
+        mock_resource = MockResource(mock_parent, {"id": "fake_id", "foo": "bar"})
 
         self.assertEqual("bar", mock_resource.foo)
         response = mock_resource.get()
@@ -64,7 +67,7 @@ class TestBaseResource(unittest.TestCase):
     def test_get_returns_bool_by_default(self, mock_request):
         mock_parent = Mock()
         mock_request.return_value = {"id": "fake_id", "foo": "catpants"}
-        mock_resource = MockResource(mock_parent, "test/{id}", {"id": "fake_id", "foo": "bar"})
+        mock_resource = MockResource(mock_parent, {"id": "fake_id", "foo": "bar"})
 
         response = mock_resource.get()
 
@@ -74,7 +77,7 @@ class TestBaseResource(unittest.TestCase):
     def test_get_returns_body_of_response_if_return_bool_False(self, mock_request):
         mock_parent = Mock()
         mock_request.return_value = {"id": "fake_id", "foo": "catpants"}
-        mock_resource = MockResource(mock_parent, "test/{id}", {"id": "fake_id", "foo": "bar"})
+        mock_resource = MockResource(mock_parent, {"id": "fake_id", "foo": "bar"})
 
         response = mock_resource.get(return_bool=False)
 
