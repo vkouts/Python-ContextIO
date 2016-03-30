@@ -65,7 +65,7 @@ class BaseResource(object):
 
     def get(self, uri="", return_bool=True, params={}, all_args=[], required_args=[]):
         response = self._request_uri(uri, params=helpers.sanitize_params(params, all_args, required_args))
-        self.__init__(self.parent, self.base_uri, response)
+        self.__init__(self.parent, response)
 
         if return_bool:
             return True
