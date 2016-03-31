@@ -100,10 +100,8 @@ def sanitize_params(params, all_args, required_args=None):
 
         # yell if we're missing a required argument
         if missing_required_args:
-            raise ArgumentError(
-                'Missing the following required arguments: %s' \
-                % ', '.join(missing_required_args)
-            )
+            raise ArgumentError("Missing the following required arguments: {0}".format(
+                ", ".join(missing_required_args)))
 
     # remove any arguments not recognized
     cleaned_args = {}
@@ -115,7 +113,6 @@ def sanitize_params(params, all_args, required_args=None):
     # quietly yell in a non-breaking way if there's any unrecognized
     # arguments left
     if params:
-        logging.warning('Invalid arguments found: %s' % \
-            ', '.join(param for param in params))
+        logging.warning("Invalid arguments found: %s".format(", ".join(param for param in params)))
 
     return cleaned_args
