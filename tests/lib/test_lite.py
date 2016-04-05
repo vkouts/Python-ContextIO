@@ -20,3 +20,11 @@ class TestLite(unittest.TestCase):
         self.assertEqual(1, len(accounts))
         self.assertIsInstance(accounts[0], User)
 
+    @mock.patch("contextio.lib.api.Api._request_uri")
+    def test_post_user_returns_User(self, mock_request):
+        mock_request.return_value = {"id": "some_id"}
+
+        user = self.api.post_user(email="fake@email.com")
+
+        self.assertIsInstance(user, User)
+
