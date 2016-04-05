@@ -2,9 +2,9 @@ import pkg_resources
 import logging
 import six
 from rauth import OAuth1Session
-from requests.exceptions import HTTPError
 
 from contextio.lib import helpers
+from contextio.lib.errors import RequestError
 from contextio.lib.resources.connect_token import ConnectToken
 from contextio.lib.resources.discovery import Discovery
 from contextio.lib.resources.oauth_provider import OauthProvider
@@ -109,17 +109,19 @@ class Api(object):
                 method, url, header_auth=True, params=params, headers=headers, data=body)
 
         self._debug(response)
-        if response.status_code >= 200 and response.status_code < 300:
-            try:
-                response_body = response.json()
-            except UnicodeDecodeError:
-                response_body = response.content
-            except ValueError:
-                response_body = response.text
+        try:
+            response_body = response.json()
+        except UnicodeDecodeError:
+            response_body = response.content
+        except ValueError:
+            response_body = response.text
 
+        if response.status_code >= 200 and response.status_code < 300:
             return response_body
         else:
-            raise HTTPError(response=response)
+            raise RequestError(
+                "Request to {0} failed with HTTP status code {1}: {2}".format(
+                    url, response.status_code, response_body), response=response)
 
     # THE FOLLOWING ROUTES ARE COMMON TO BOTH LITE AND 2.0
     def get_connect_tokens(self, **params):

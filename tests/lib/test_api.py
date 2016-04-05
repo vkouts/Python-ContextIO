@@ -1,10 +1,10 @@
 import json
 import mock
 import unittest
-from requests.exceptions import HTTPError
 from rauth import OAuth1Session
 
 from contextio.lib.api import Api
+from contextio.lib.errors import RequestError
 
 
 class TestApi(unittest.TestCase):
@@ -98,7 +98,7 @@ class TestApi(unittest.TestCase):
 
         self.api = Api(consumer_key="foo", consumer_secret="bar")
 
-        with self.assertRaises(HTTPError):
+        with self.assertRaises(RequestError):
             self.api._request_uri("catpants")
 
         mock_request.assert_called_with(
@@ -110,10 +110,10 @@ class TestApi(unittest.TestCase):
         )
 
     @mock.patch("contextio.lib.api.Api._request_uri")
-    def test_request_uri_raises_HTTPError_if_status_not_between_200_and_300(self, mock_request):
-        mock_request.side_effect = HTTPError
+    def test_request_uri_raises_RequestError_if_status_not_between_200_and_300(self, mock_request):
+        mock_request.side_effect = RequestError
 
-        with self.assertRaises(HTTPError):
+        with self.assertRaises(RequestError):
             self.api._request_uri("catpants")
 
     @mock.patch("contextio.lib.api.OAuth1Session")
