@@ -200,8 +200,7 @@ class Api(object):
         if 'source_type' not in params:
             params['source_type'] = 'IMAP'
 
-        req_args = ['source_type', 'email']
-        all_args = ['source_type', 'email']
+        all_args = req_args = ['source_type', 'email']
 
         params = helpers.sanitize_params(params, all_args, req_args)
 
@@ -236,9 +235,7 @@ class Api(object):
         Returns:
             a dictionary
         """
-        req_args = [
-            'type', 'provider_consumer_key', 'provider_consumer_secret']
-        all_args = [
+        all_args = req_args = [
             'type', 'provider_consumer_key', 'provider_consumer_secret']
 
         params = helpers.sanitize_params(params, all_args, req_args)
