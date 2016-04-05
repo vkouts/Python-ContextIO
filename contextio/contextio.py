@@ -107,24 +107,18 @@ class ContextIO(object):
                 method, url, header_auth=True, params=params, headers=headers, data=body)
 
         self._debug(response)
-        status = response.status_code
+        if response.status_code >= 200 and response.status_code < 300:
+            try:
+                response_body = response.json()
+            except UnicodeDecodeError:
+                response_body = response.content
+            except ValueError:
+                response_body = response.text
 
-        try:
-            response_body = response.json()
-        except UnicodeDecodeError:
-            response_body = response.content
-        except ValueError:
-            response_body = response.text
-
-        if status >= 200 and status < 300:
             return response_body
         else:
-            if isinstance(response_body, dict) and "feedback_code" in response_body:
-                error = "HTTP {0}: {1}".format(status, response_body)
-            else:
-                error = "HTTP {0}".format(status)
+            raise HTTPError(response=response)
 
-            raise HTTPError(error)
 
     def get_accounts(self, **params):
         """List of Accounts.
@@ -154,12 +148,10 @@ class ContextIO(object):
         Returns:
             A list of Account objects
         """
-        all_args = ['email', 'status', 'status_ok', 'limit', 'offset']
+        all_args = ["email", "status", "status_ok", "limit", "offset"]
 
         params = helpers.sanitize_params(params, all_args)
-        return [Account(self, obj) for obj in self._request_uri(
-            'accounts', params=params
-        )]
+        return [Account(self, obj) for obj in self._request_uri("accounts", params=params)]
 
     def post_account(self, **params):
         """Add a new account.
