@@ -15,9 +15,6 @@ class User(BaseResource):
     def __init__(self, parent, definition):
         super(User, self).__init__(parent, "users/{id}", definition)
 
-    def get(self):
-        return super(User, self).get()
-
     def post(self, **kwargs):
         all_args = ["first_name", "last_name"]
 
