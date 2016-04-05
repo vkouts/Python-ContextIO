@@ -1,18 +1,13 @@
 import unittest
-from mock import patch
+from mock import Mock, patch
 
-from contextio.contextio import ContextIO
-from contextio.lib.resources.account import Account
 from contextio.lib.resources.message import Message
 from contextio.lib.resources.thread import Thread
 
 
 class TestMessage(unittest.TestCase):
     def setUp(self):
-        self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
-        self.account = Account(self.contextio, {"id": "fake_id"})
-
-        self.message = Message(self.account, {"message_id": "fake_message_id"})
+        self.message = Message(Mock(), {"message_id": "fake_message_id"})
 
     def test_constructor_creates_message_object_with_all_attributes_in_keys_list(self):
         self.assertTrue(hasattr(self.message, 'date'))
@@ -217,7 +212,7 @@ class TestMessage(unittest.TestCase):
             "offset": 1
 
         }
-        message = Message(self.account, {"message_id": "fake_message_id", "subject": "catpants"})
+        message = Message(Mock(), {"message_id": "fake_message_id", "subject": "catpants"})
         message.get_thread(**params)
 
         self.assertEqual("catpants", message.thread.subject)

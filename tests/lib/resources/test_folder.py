@@ -1,20 +1,13 @@
-from mock import patch
+from mock import Mock, patch
 import unittest
 
-from contextio.contextio import ContextIO
-from contextio.lib.resources.account import Account
 from contextio.lib.resources.folder import Folder
 from contextio.lib.resources.message import Message
-from contextio.lib.resources.source import Source
 
 
 class TestFolder(unittest.TestCase):
     def setUp(self):
-        self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
-        self.account = Account(self.contextio, {"id": "fake_id"})
-        self.source = Source(self.account, {"label": "foobar"})
-
-        self.folder = Folder(self.source, {"name": "fake_folder_name"})
+        self.folder = Folder(Mock(), {"name": "fake_folder_name"})
 
     def test_constructor_creates_folder_object_with_all_attributes_in_keys_list(self):
         self.assertTrue(hasattr(self.folder, "name"))

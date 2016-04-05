@@ -1,8 +1,6 @@
-from mock import patch
 import unittest
+from mock import Mock, patch
 
-from contextio.contextio import ContextIO
-from contextio.lib.resources.account import Account
 from contextio.lib.resources.connect_token import ConnectToken
 from contextio.lib.resources.folder import Folder
 from contextio.lib.resources.source import Source
@@ -10,9 +8,7 @@ from contextio.lib.resources.source import Source
 
 class TestSource(unittest.TestCase):
     def setUp(self):
-        self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
-        self.account = Account(self.contextio, {"id": "fake_id"})
-        self.source = Source(self.contextio, {"label": "foobar"})
+        self.source = Source(Mock(), {"label": "foobar"})
 
     def test_constructor_creates_message_object_with_all_attributes_in_keys_list(self):
         self.assertTrue(hasattr(self.source, "username"))

@@ -1,17 +1,12 @@
-from mock import patch
+from mock import Mock, patch
 import unittest
 
-from contextio.contextio import ContextIO
-from contextio.lib.resources.account import Account
 from contextio.lib.resources.file import File
 
 
 class TestFile(unittest.TestCase):
     def setUp(self):
-        self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar")
-        self.account = Account(self.contextio, {"id": "fake_id"})
-
-        self.file = File(self.account, {"file_id": "fake_file_id"})
+        self.file = File(Mock(), {"file_id": "fake_file_id"})
 
     def test_constructor_creates_file_object_with_all_attributes_in_keys_list(self):
         self.assertTrue(hasattr(self.file, "size"))
@@ -36,7 +31,7 @@ class TestFile(unittest.TestCase):
 
     @patch("contextio.lib.resources.file.File._request_uri")
     def test_get_content_calls_request_uri_with_correct_arguments(self, mock_request):
-        file = File(self.account, {"file_id": "fake_file_id"})
+        file = File(Mock(), {"file_id": "fake_file_id"})
 
         file.get_content()
 
@@ -44,7 +39,7 @@ class TestFile(unittest.TestCase):
 
     @patch("contextio.lib.resources.file.File._request_uri")
     def test_get_content_calls_request_uri_with_correct_arguments_when_download_link_is_True(self, mock_request):
-        file = File(self.account, {"file_id": "fake_file_id"})
+        file = File(Mock(), {"file_id": "fake_file_id"})
 
         file.get_content(download_link=True)
 
