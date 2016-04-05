@@ -1,3 +1,4 @@
+from contextio.lib.helpers import sanitize_params, check_for_account_credentials
 from contextio.lib.resources.base_resource import BaseResource
 from contextio.lib.resources.connect_token import ConnectToken
 from contextio.lib.resources.email_account import EmailAccount
@@ -18,7 +19,7 @@ class User(BaseResource):
         return super(User, self).get()
 
     def post(self, **kwargs):
-        all_args = ['first_name', 'last_name']
+        all_args = ["first_name", "last_name"]
 
         for prop in all_args:
             value = kwargs.get(prop)
@@ -31,19 +32,52 @@ class User(BaseResource):
         return super(User, self).delete()
 
     def get_connect_tokens(self):
-        return [ConnectToken(self, obj) for obj in self._request_uri('connect_tokens')]
+        return [ConnectToken(self, obj) for obj in self._request_uri("connect_tokens")]
+
+    def post_connect_token(self, **params):
+        req_args = ["callback_url"]
+        all_args = [
+            "email", "first_name", "last_name", "source_callback_url",
+            "source_sync_all_folders", "source_sync_flags", "source_raw_file_list",
+            "status_callback_url"
+        ] + req_args
+
+        return super(User, self).post(
+            uri="connect_tokens", return_bool=False, params=params, all_args=all_args,
+            required_args=req_args)
 
     def get_email_accounts(self):
-        return [EmailAccount(self, obj) for obj in self._request_uri('email_accounts')]
+        return [EmailAccount(self, obj) for obj in self._request_uri("email_accounts")]
+
+    def post_email_account(self, **kwargs):
+        req_args = ["email", "server", "username", "use_ssl", "port", "type"]
+
+        all_args = req_args + ["status_callback_url"]
+
+        email_account = super(User, self).post(
+            uri="email_accounts", params=kwargs, return_bool=False, all_args=all_args,
+            required_args=req_args
+        )
+
+        if bool(email_account["success"]) is False:
+            return False
+
+        return EmailAccount(self, email_account)
+
+        if check_for_account_credentials(kwargs):
+            all_args = ["migrate_account_id", "first_name", "last_name"] + req_args
+            params = sanitize_params(kwargs, all_args, req_args)
+
+            return User(self, self._request_uri("users", method="POST", params=params))
 
     def get_webhooks(self):
-        return [WebHook(self, obj) for obj in self._request_uri('webhooks')]
+        return [WebHook(self, obj) for obj in self._request_uri("webhooks")]
 
     def post_webhook(self, **kwargs):
         req_args = ["callback_url", "failure_notif_url"]
 
-        all_args = [
-            "callback_url", "failure_notif_url", "filter_to", "filter_from",
+        all_args = req_args + [
+            "filter_to", "filter_from",
             "filter_cc", "filter_subject", "filter_thread",
             "filter_new_important", "filter_file_name", "filter_folder_added",
             "filter_folder_removed", "filter_to_domain", "filter_from_domain",
@@ -55,7 +89,7 @@ class User(BaseResource):
             required_args=req_args
         )
 
-        if bool(webhook['success']) is False:
+        if bool(webhook["success"]) is False:
             return False
 
         return WebHook(self, webhook)

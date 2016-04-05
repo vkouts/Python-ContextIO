@@ -179,24 +179,9 @@ class TestAccount(unittest.TestCase):
 
         mock_request.assert_called_with("sync", method="POST")
 
-    @patch("contextio.lib.resources.base_resource.BaseResource.post")
-    def test_post_webhook_requires_certain_args(self, mock_post):
-        req_args = ['callback_url', 'failure_notif_url']
-        all_args = [
-            'callback_url', 'failure_notif_url', 'filter_to', 'filter_from', 'filter_cc',
-            'filter_subject', 'filter_thread', 'filter_new_important', 'filter_file_name',
-            'filter_folder_added', 'filter_folder_removed', 'filter_to_domain',
-            'filter_from_domain', 'include_body', 'body_type', 'include_parsed_receipts'
-        ]
-
-        self.account.post_webhook()
-
-        mock_post.assert_called_with(
-            return_bool=False,
-            all_args=all_args,
-            params={},
-            required_args=req_args,
-            uri="webhooks")
+    def test_post_webhook_requires_args(self):
+        with self.assertRaises(ArgumentError):
+            self.account.post_webhook()
 
     @patch("contextio.lib.resources.base_resource.BaseResource.post")
     def test_post_webhook_returns_WebHook_object(self, mock_post):

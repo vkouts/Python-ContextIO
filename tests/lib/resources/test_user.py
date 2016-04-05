@@ -1,7 +1,7 @@
-from mock import patch
+from mock import Mock, patch
 import unittest
 
-from contextio.contextio import ContextIO
+from contextio.lib.errors import ArgumentError
 from contextio.lib.resources.connect_token import ConnectToken
 from contextio.lib.resources.user import User
 from contextio.lib.resources.email_account import EmailAccount
@@ -10,8 +10,7 @@ from contextio.lib.resources.webhook import WebHook
 
 class TestUser(unittest.TestCase):
     def setUp(self):
-        self.contextio = ContextIO(consumer_key="foo", consumer_secret="bar", version="lite")
-        self.user = User(self.contextio, {"id": "fake_id"})
+        self.user = User(Mock(), {"id": "fake_id"})
 
     @patch("contextio.lib.resources.base_resource.BaseResource.post")
     def test_post_updates_first_and_last_name(self, mock_post):
@@ -47,6 +46,10 @@ class TestUser(unittest.TestCase):
         self.assertEqual(1, len(user_email_accounts))
         self.assertIsInstance(user_email_accounts[0], EmailAccount)
 
+    def test_post_webhook_requires_args(self):
+        with self.assertRaises(ArgumentError):
+            self.user.post_webhook()
+
     @patch("contextio.lib.resources.base_resource.BaseResource._request_uri")
     def test_get_webhooks_returns_list_of_WebHooks(self, mock_request):
         mock_request.return_value = [{"webhook_id": "fake_id"}]
@@ -56,23 +59,9 @@ class TestUser(unittest.TestCase):
         self.assertEqual(1, len(user_webhooks))
         self.assertIsInstance(user_webhooks[0], WebHook)
 
-    @patch("contextio.lib.resources.base_resource.BaseResource.post")
-    def test_post_webhook_requires_certain_args(self, mock_post):
-        mock_post.return_value = {"success": True, "webhook_id": "foobar"}
-
-        req_args = ["callback_url", "failure_notif_url"]
-        all_args = [
-            "callback_url", "failure_notif_url", "filter_to", "filter_from", "filter_cc",
-            "filter_subject", "filter_thread", "filter_new_important", "filter_file_name",
-            "filter_folder_added", "filter_folder_removed", "filter_to_domain",
-            "filter_from_domain", "include_body", "body_type"
-        ]
-
-        self.user.post_webhook()
-
-        mock_post.assert_called_with(
-            return_bool=False, all_args=all_args, params={}, required_args=req_args,
-            uri="webhooks")
+    def test_post_email_account_requires_args(self):
+        with self.assertRaises(ArgumentError):
+            self.user.post_webhook()
 
     @patch("contextio.lib.resources.base_resource.BaseResource.post")
     def test_post_webhook_returns_WebHook_object(self, mock_post):

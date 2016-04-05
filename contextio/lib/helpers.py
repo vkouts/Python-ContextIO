@@ -116,3 +116,11 @@ def sanitize_params(params, all_args, required_args=None):
         logging.warning("Invalid arguments found: %s".format(", ".join(param for param in params)))
 
     return cleaned_args
+
+def check_for_account_credentials(argument_dict):
+    if "password" in argument_dict or "provider_refresh_token" in argument_dict and "provider_consumer_key" in argument_dict:
+        return True
+    else:
+        raise ArgumentError(
+            "You must provide either a 'password' or a 'provider_refresh_token'"
+            " and a 'provider_consumer_key'")

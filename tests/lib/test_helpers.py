@@ -59,3 +59,36 @@ class TestHelpers(unittest.TestCase):
     # Not sure if this is being used anywhere - didn't want to remove it in case someone is using
     # this helper directly
     # def test_process_person_info()
+
+    def test_check_for_account_credentials_returns_true_if_password_in_dict(self):
+        result = helpers.check_for_account_credentials({"password": "rickjames"})
+
+        self.assertTrue(result)
+
+    def test_check_for_account_credentials_returns_true_if_provider_refresh_token_and_consumer_key_in_dict(self):
+        result = helpers.check_for_account_credentials({
+            "provider_refresh_token": "han",
+            "provider_consumer_key": "shotfirst"
+        })
+
+        self.assertTrue(result)
+
+    def test_check_for_account_credentials_raises_ArgumentError_if_no_credentials(self):
+        with self.assertRaises(ArgumentError):
+            helpers.check_for_account_credentials({})
+
+    def test_check_for_account_credentials_raises_ArgumentError_if_consumer_key_missing(self):
+        with self.assertRaises(ArgumentError):
+            helpers.check_for_account_credentials({"provider_refresh_token": "han"})
+
+    def test_check_for_account_credentials_raises_ArgumentError_if_refresh_token_missing(self):
+        with self.assertRaises(ArgumentError):
+            helpers.check_for_account_credentials({"provider_consumer_key": "shotfirst"})
+
+        # if "password" in argument_dict or "provider_refresh_token" in argument_dict and "provider_consumer_key" in argument_dict:
+        #     return True
+        # else:
+        #     raise ArgumentError(
+        #         "You must provide either a 'password' or a 'provider_refresh_token'"
+        #         " and a 'provider_consumer_key'")
+

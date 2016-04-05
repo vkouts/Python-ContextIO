@@ -98,12 +98,12 @@ class TestBaseResource(unittest.TestCase):
 
         self.assertEqual(True, response)
 
-    # @patch("contextio.lib.resources.base_resource.BaseResource._request_uri")
-    # def test_post_sends_post_request_with_defaults_to_resource_base_uri(self, mock_request):
-    #     base_resource = BaseResource(Mock(), "test/{id}", {"id": "fake_id"})
-    #     base_resource.post()
+    @patch("contextio.lib.resources.base_resource.BaseResource._request_uri")
+    def test_post_sends_post_request_with_defaults_to_resource_base_uri(self, mock_request):
+        base_resource = BaseResource(Mock(), "test/{id}", {"id": "fake_id"})
+        base_resource.post()
 
-    #     mock_request.assert_called_with('', headers={}, method='POST', params={})
+        mock_request.assert_called_with("", headers={}, method='POST', params={})
 
     @patch("contextio.lib.resources.base_resource.BaseResource._request_uri")
     def test_post_returns_boolean_by_default(self, mock_request):
