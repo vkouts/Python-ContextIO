@@ -1,7 +1,7 @@
 import logging
 
 from contextio.lib import helpers
-from contextio.lib.resources.base_resource import BaseResource
+from contextio.lib.resources.base_resource import BaseResource, only
 from contextio.lib.resources.file import File
 from contextio.lib.resources.thread import Thread
 
@@ -32,17 +32,31 @@ class Message(BaseResource):
         folders: dict - the folders this message is in
     """
     resource_id = "message_id"
-    keys = ['date', 'date_indexed', 'addresses', 'person_info',
-        'email_message_id', 'message_id', 'gmail_message_id',
-        'gmail_thread_id', 'files', 'subject', 'folders', 'sources']
+    keys = {
+        "2.0": [
+            'date', 'date_indexed', 'addresses', 'person_info', 'email_message_id', 'message_id',
+            'gmail_message_id', 'gmail_thread_id', 'files', 'subject', 'folders', 'sources'
+        ],
+        "lite": [
+            "sent_at", "addresses", "subject", "email_message_id", "message_id", "list_headers",
+            "in_reply_to", "references", "attachments", "bodies", "received_headers", "folders",
+            "resource_url", "person_info"
+        ]
+    }
 
     # set empty properties that will get populated by the get methods
     body = None
     flags = None
-    folders = None
     headers = None
+
+    # 2.0 only
+    folders = None
     source = None
     thread = None
+
+    # lite only
+    raw = None
+    attachments = None
 
     def __init__(self, parent, definition):
         """Constructor.
@@ -219,6 +233,7 @@ class Message(BaseResource):
         self.flags = self._request_uri("flags")
         return self.flags
 
+    @only("2.0")
     def post_flag(self, **params):
         """Set message flags for a given email.
 
@@ -254,6 +269,7 @@ class Message(BaseResource):
 
         return status
 
+    @only("2.0")
     def get_folders(self):
         """List of folders a message is in.
 
@@ -280,6 +296,7 @@ class Message(BaseResource):
         self.folders = self._request_uri('folders')
         return self.folders
 
+    @only("2.0")
     def post_folder(self, **params):
         """Edits the folders a message is in.
 
@@ -300,6 +317,7 @@ class Message(BaseResource):
         params = helpers.sanitize_params(params, all_args)
         return super(Message, self).post("folders", params=params)
 
+    @only("2.0")
     def put_folders(self, body):
         """Set folders a message should be in.
 
@@ -352,6 +370,7 @@ class Message(BaseResource):
         self.headers = self._request_uri('headers', params=params)
         return self.headers
 
+    @only("2.0")
     def get_source(self):
         """Get the message source.
 
@@ -366,6 +385,7 @@ class Message(BaseResource):
         self.source = self._request_uri('source')
         return self.source
 
+    @only("2.0")
     def get_thread(self, **params):
         """List other messages in the same thread as this message.
 
@@ -420,3 +440,28 @@ class Message(BaseResource):
             self.thread.subject = self.subject
 
         return self.thread
+
+    @only("lite")
+    def get_raw(self, **params):
+        all_args = ['delimiter']
+        params = helpers.sanitize_params(params, all_args)
+        self.raw = self._request_uri('raw', params=params)
+
+    @only("lite")
+    def get_attachments(self, **params):
+        all_args = ['delimiter']
+        params = helpers.sanitize_params(params, all_args)
+        self.attachments = self._request_uri('attachments', params=params)
+
+
+    @only("lite")
+    def post_read(self, **params):
+        all_args = ["delimiter"]
+        params = helpers.sanitize_params(params, all_args)
+        return super(Message, self).post("read", params=params)
+
+    @only("lite")
+    def delete_read(self, **params):
+        all_args = ["delimiter"]
+        params = helpers.sanitize_params(params, all_args)
+        return super(Message, self).delete("read")

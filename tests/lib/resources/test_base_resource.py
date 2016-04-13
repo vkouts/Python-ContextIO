@@ -16,7 +16,7 @@ class MockResource(BaseResource):
 class TestBaseResource(unittest.TestCase):
     @patch("contextio.lib.resources.base_resource.logging.error")
     def test_constructor_logs_error_if_definition_is_empty_string(self, mock_logging_error):
-        BaseResource(Mock(), "/some-uri", "")
+        BaseResource(Mock(spec=[]), "/some-uri", "")
 
         mock_logging_error.assert_called_with("Empty response received for /some-uri")
 
@@ -28,11 +28,35 @@ class TestBaseResource(unittest.TestCase):
 
         mock_logging_error.assert_called_with("Invalid response received for /some-uri")
 
-    def test_constructor_sets_attributes_from_class_keys_and_definition(self):
+    def test_constructor_sets_attributes_defined_in_class_keys_list(self):
         mock_parent = Mock()
+        mock_parent.api_version = "some_version"
         mock_resource = MockResource(mock_parent, {"id": "fake_id", "foo": "bar"})
 
         self.assertEqual("fake_id", mock_resource.id)
+        self.assertEqual("some_version", mock_resource.api_version)
+        self.assertEqual("bar", mock_resource.foo)
+        self.assertIsNone(mock_resource.baz)
+        self.assertEqual(mock_parent, mock_resource.parent)
+        self.assertEqual("test/fake_id", mock_resource.base_uri)
+
+    def test_constructor_sets_attributes_defined_in_class_keys_dict(self):
+        mock_parent = Mock()
+        mock_parent.api_version = "some_version"
+
+        class MockResource(BaseResource):
+            resource_id = "id"
+            keys = {
+                "some_version": ["id", "foo", "baz"]
+            }
+
+            def __init__(self, parent, definition):
+                super(MockResource, self).__init__(parent, "test/{id}", definition)
+
+        mock_resource = MockResource(mock_parent, {"id": "fake_id", "foo": "bar"})
+
+        self.assertEqual("fake_id", mock_resource.id)
+        self.assertEqual("some_version", mock_resource.api_version)
         self.assertEqual("bar", mock_resource.foo)
         self.assertIsNone(mock_resource.baz)
         self.assertEqual(mock_parent, mock_resource.parent)
@@ -43,6 +67,13 @@ class TestBaseResource(unittest.TestCase):
         with self.assertRaises(MissingResourceId):
             MockResource(mock_parent, {"foo": "bar"})
 
+    def test_constructor_default_api_version_to_2_0(self):
+        class MockParent(object):
+            pass
+
+        mock_resource = MockResource(MockParent, {"id": "bar"})
+
+        self.assertEqual("2.0", mock_resource.api_version)
 
     def test_uri_for_joins_arguments_with_base_uri(self):
         base_resource = BaseResource(Mock(), "test/{id}", {"id": "fake_id"})

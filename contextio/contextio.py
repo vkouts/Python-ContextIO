@@ -5,7 +5,7 @@ from contextio.lib.lite import Lite
 
 
 def ContextIO(consumer_key, consumer_secret, **kwargs):
-    if kwargs.get("version") == "lite":
+    if kwargs.get("api_version") == "lite":
         return Lite(consumer_key, consumer_secret, **kwargs)
     else:
         return V2_0(consumer_key, consumer_secret, **kwargs)

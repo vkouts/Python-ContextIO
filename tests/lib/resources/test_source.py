@@ -8,7 +8,7 @@ from contextio.lib.resources.source import Source
 
 class TestSource(unittest.TestCase):
     def setUp(self):
-        self.source = Source(Mock(), {"label": "foobar"})
+        self.source = Source(Mock(spec=[]), {"label": "foobar"})
 
     def test_constructor_creates_message_object_with_all_attributes_in_keys_list(self):
         self.assertTrue(hasattr(self.source, "username"))

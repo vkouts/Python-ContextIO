@@ -1,3 +1,4 @@
+import functools
 import logging
 import six
 
@@ -10,6 +11,18 @@ from contextio.lib import helpers
 from contextio.lib.errors import MissingResourceId
 
 no_resource_id_required = ["BaseResource", "Discovery"]
+
+def only(*versions):
+    def _only(method):
+        @functools.wraps(method)
+        def wrapper(self, *args, **kwargs):
+            if self.api_version not in list(versions):
+                raise Exception(
+                    "`{0}()` is not implemented for the {1} version of the api".format(
+                        method.__name__, self.api_version))
+            return method(self, *args, **kwargs)
+        return wrapper
+    return _only
 
 class BaseResource(object):
     """Base class for resource objects."""
@@ -32,15 +45,26 @@ class BaseResource(object):
             logging.error('Invalid response received for ' + base_uri + "")
             return
 
-        for k in self.__class__.keys:
+        self.parent = parent
+
+        self.api_version = parent.api_version if hasattr(parent, "api_version") else "2.0"
+
+        self._set_instance_attributes(parent, definition)
+
+        unidict = {six.text_type(k): six.text_type(v) for k, v in definition.items()}
+        self.base_uri = quote(base_uri.format(**unidict))
+
+    def _set_instance_attributes(self, parent, definition):
+        if isinstance(self.__class__.keys, dict):
+            keys = self.__class__.keys[self.api_version]
+        else:
+            keys = self.__class__.keys
+
+        for k in keys:
             if k in definition:
                 setattr(self, k, definition[k])
             else:
                 setattr(self, k, None)
-
-        self.parent = parent
-        unidict = {six.text_type(k): six.text_type(v) for k, v in definition.items()}
-        self.base_uri = quote(base_uri.format(**unidict))
 
     def _uri_for(self, *elems):
         """Joins API endpoint elements and returns a string."""

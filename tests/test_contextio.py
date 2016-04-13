@@ -12,6 +12,6 @@ class TestContextIOFactory(unittest.TestCase):
         self.assertIsInstance(contextio, V2_0)
 
     def test_ContextIOFactory_returns_Lite_instance(self):
-        contextio = ContextIO(consumer_key="foo", consumer_secret="bar", version="lite")
+        contextio = ContextIO(consumer_key="foo", consumer_secret="bar", api_version="lite")
 
         self.assertIsInstance(contextio, Lite)

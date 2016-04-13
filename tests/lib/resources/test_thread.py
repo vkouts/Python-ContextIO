@@ -6,9 +6,9 @@ from contextio.lib.resources.thread import Thread
 from contextio.lib.resources.source import Source
 
 
-class TestSource(unittest.TestCase):
+class TestThread(unittest.TestCase):
     def setUp(self):
-        self.thread = Thread(Mock(), {"gmail_thread_id": "foobar"})
+        self.thread = Thread(Mock(spec=["foo"]), {"gmail_thread_id": "foobar"})
 
     def test_constructor_creates_thread_object_with_all_attributes_in_keys_list(self):
         self.assertTrue(hasattr(self.thread, "gmail_thread_id"))
@@ -20,7 +20,7 @@ class TestSource(unittest.TestCase):
         self.assertTrue(hasattr(self.thread, "sources"))
 
     def test_constructor_adds_messages_to_thread_object_if_messages_in_definition(self):
-        thread = Thread(Mock(), {
+        thread = Thread(Mock(spec=["foo"]), {
             "gmail_thread_id": "foobar",
             "messages": [
                 {"message_id": "foo"},

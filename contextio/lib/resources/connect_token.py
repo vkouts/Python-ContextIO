@@ -21,8 +21,16 @@ class ConnectToken(BaseResource):
         account: Account object
     """
     resource_id = "token"
-    keys = ['token', 'email', 'created', 'used', 'expires', 'callback_url',
-        'first_name', 'last_name', 'account', 'user']
+    keys = {
+        "2.0": [
+            "token", "email", "created", "used", "expires", "callback_url",
+            "first_name", "last_name", "account", "user"
+        ],
+        "lite": [
+            "token", "email", "account_lite", "created", "used", "status_callback_url",
+            "callback_url", "first_name", "last_name", "email_account_id", "resource_url", "expires"
+        ]
+    }
 
     def __init__(self, parent, definition):
         """Constructor.

@@ -22,7 +22,7 @@ class Api(object):
             set to 'log' will send debug messages to logging.debug()
     """
 
-    def __init__(self, consumer_key, consumer_secret, debug=None, version="2.0", **kwargs):
+    def __init__(self, consumer_key, consumer_secret, debug=None, api_version="2.0", **kwargs):
         """Constructor that creates oauth2 consumer and client.
 
         Required Arguments:
@@ -39,7 +39,7 @@ class Api(object):
         if self.url_base is None:
             self.url_base = "https://api.context.io"
 
-        self.version = version
+        self.api_version = api_version
 
         self.debug = debug
         if self.debug is True:   # for people who don't read the code and just set debug=True
@@ -90,7 +90,7 @@ class Api(object):
             typically, JSON - depends on the API call, refer to the other
                 method docstrings for more details.
         """
-        url = "/".join((self.url_base, self.version, uri))
+        url = "/".join((self.url_base, self.api_version, uri))
 
         try:
             lib_version = pkg_resources.require("contextio")[0].version
@@ -98,7 +98,7 @@ class Api(object):
             lib_version = "dev"
 
         headers.update(
-            {"user-agent": "contextio/{0}/python-lib-{1}".format(self.version, lib_version)})
+            {"user-agent": "contextio/{0}/python-lib-{1}".format(self.api_version, lib_version)})
 
         if method == "POST":
             params['body'] = body
@@ -228,16 +228,15 @@ class Api(object):
 
         Required Arguments:
             type: string -  Identification of the OAuth provider. This must be
-                either GMAIL and GOOGLEAPPSMARKETPLACE.
+                either GMAIL_OAUTH2 and MSLIVECONNECT.
             provider_consumer_key: string - The OAuth consumer key
             provider_consumer_secret: string - The OAuth consumer secret
 
         Returns:
             a dictionary
         """
-        all_args = req_args = [
-            'type', 'provider_consumer_key', 'provider_consumer_secret']
+        all_args = req_args = ["type", "provider_consumer_key", "provider_consumer_secret"]
 
         params = helpers.sanitize_params(params, all_args, req_args)
 
-        return self._request_uri('oauth_providers', method='POST', params=params)
+        return self._request_uri("oauth_providers", method="POST", params=params)

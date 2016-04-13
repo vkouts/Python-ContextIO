@@ -10,7 +10,7 @@ from contextio.lib.resources.webhook import WebHook
 
 class TestUser(unittest.TestCase):
     def setUp(self):
-        self.user = User(Mock(), {"id": "fake_id"})
+        self.user = User(Mock(spec=[]), {"id": "fake_id"})
 
     @patch("contextio.lib.resources.base_resource.BaseResource.post")
     def test_post_updates_first_and_last_name(self, mock_post):

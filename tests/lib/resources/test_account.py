@@ -14,7 +14,7 @@ from contextio.lib.helpers import ArgumentError
 
 class TestAccount(unittest.TestCase):
     def setUp(self):
-        self.account = Account(Mock(), {"id": "fake_id"})
+        self.account = Account(Mock(spec=[]), {"id": "fake_id"})
 
     @patch("contextio.lib.resources.base_resource.BaseResource.post")
     def test_post_updates_first_and_last_name(self, mock_post):

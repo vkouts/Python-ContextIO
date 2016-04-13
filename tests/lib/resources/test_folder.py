@@ -7,7 +7,7 @@ from contextio.lib.resources.message import Message
 
 class TestFolder(unittest.TestCase):
     def setUp(self):
-        self.folder = Folder(Mock(), {"name": "fake_folder_name"})
+        self.folder = Folder(Mock(spec=[]), {"name": "fake_folder_name"})
 
     def test_constructor_creates_folder_object_with_all_attributes_in_keys_list(self):
         self.assertTrue(hasattr(self.folder, "name"))

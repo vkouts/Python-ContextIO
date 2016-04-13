@@ -17,7 +17,11 @@ class Folder(BaseResource):
             (present only if include_extended_counts is set to 1)
     """
     resource_id = "name"
-    keys = ['name', 'attributes', 'delim', 'nb_messages', 'nb_unseen_messages']
+    keys = {
+        "2.0": ["name", "attributes", "delim", "nb_messages", "nb_unseen_messages"],
+        "lite": ["name", "attributes", "delimiter", "nb_messages", "nb_unseen_messages"]
+    }
+
 
     def __init__(self, parent, defn):
         """Constructor.
@@ -117,12 +121,13 @@ class Folder(BaseResource):
         Returns:
             a list of Message objects.
         """
-        all_args = ['include_thread_size', 'include_body',
-            'body_type', 'include_headers', 'include_flags', 'flag_seen',
-            'limit', 'offset'
+        all_args = [
+            "include_thread_size", "include_body",
+            "body_type", "include_headers", "include_flags", "flag_seen",
+            "limit", "offset"
         ]
         params = helpers.sanitize_params(params, all_args)
 
         return [
-            Message(self.parent.parent, obj) for obj in self._request_uri('messages', params=params)
+            Message(self, obj) for obj in self._request_uri('messages', params=params)
         ]

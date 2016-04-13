@@ -9,7 +9,7 @@ from contextio.lib.resources.thread import Thread
 
 class TestContact(unittest.TestCase):
     def setUp(self):
-        self.contact = Contact(Mock(), {"email": "fake@email.com"})
+        self.contact = Contact(Mock(spec=[]), {"email": "fake@email.com"})
 
     def test_constructor_creates_contact_object_with_all_attributes_in_keys_list(self):
         self.assertTrue(hasattr(self.contact, 'emails'))

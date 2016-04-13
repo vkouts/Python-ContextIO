@@ -7,22 +7,46 @@ from contextio.lib.resources.thread import Thread
 
 class TestMessage(unittest.TestCase):
     def setUp(self):
-        self.message = Message(Mock(), {"message_id": "fake_message_id"})
+        self.message = Message(Mock(spec=[]), {"message_id": "fake_message_id"})
 
-    def test_constructor_creates_message_object_with_all_attributes_in_keys_list(self):
-        self.assertTrue(hasattr(self.message, 'date'))
-        self.assertTrue(hasattr(self.message, 'date_indexed'))
-        self.assertTrue(hasattr(self.message, 'addresses'))
-        self.assertTrue(hasattr(self.message, 'person_info'))
-        self.assertTrue(hasattr(self.message, 'email_message_id'))
-        self.assertTrue(hasattr(self.message, 'message_id'))
-        self.assertTrue(hasattr(self.message, 'gmail_message_id'))
-        self.assertTrue(hasattr(self.message, 'gmail_thread_id'))
-        self.assertTrue(hasattr(self.message, 'files'))
-        self.assertTrue(hasattr(self.message, 'subject'))
-        self.assertTrue(hasattr(self.message, 'folders'))
-        self.assertTrue(hasattr(self.message, 'sources'))
+    def test_constructor_creates_message_object_with_all_attributes_in_keys_list_for_v2_0_api(self):
+        mock_parent = Mock()
+        mock_parent.api_version = "2.0"
+        message = Message(mock_parent, {"message_id": "fake_message_id"})
 
+        self.assertTrue(hasattr(message, 'date'))
+        self.assertTrue(hasattr(message, 'date_indexed'))
+        self.assertTrue(hasattr(message, 'addresses'))
+        self.assertTrue(hasattr(message, 'person_info'))
+        self.assertTrue(hasattr(message, 'email_message_id'))
+        self.assertTrue(hasattr(message, 'message_id'))
+        self.assertTrue(hasattr(message, 'gmail_message_id'))
+        self.assertTrue(hasattr(message, 'gmail_thread_id'))
+        self.assertTrue(hasattr(message, 'files'))
+        self.assertTrue(hasattr(message, 'subject'))
+        self.assertTrue(hasattr(message, 'folders'))
+        self.assertTrue(hasattr(message, 'sources'))
+
+    def test_constructor_creates_message_object_with_all_attributes_in_keys_list_for_lite_api(self):
+        mock_parent = Mock()
+        mock_parent.api_version = "lite"
+
+        message = Message(mock_parent, {"message_id": "fake_message_id"})
+
+        self.assertTrue(hasattr(message, "sent_at"))
+        self.assertTrue(hasattr(message, "addresses"))
+        self.assertTrue(hasattr(message, "subject"))
+        self.assertTrue(hasattr(message, "email_message_id"))
+        self.assertTrue(hasattr(message, "message_id"))
+        self.assertTrue(hasattr(message, "list_headers"))
+        self.assertTrue(hasattr(message, "in_reply_to"))
+        self.assertTrue(hasattr(message, "references"))
+        self.assertTrue(hasattr(message, "attachments"))
+        self.assertTrue(hasattr(message, "bodies"))
+        self.assertTrue(hasattr(message, "received_headers"))
+        self.assertTrue(hasattr(message, "folders"))
+        self.assertTrue(hasattr(message, "resource_url"))
+        self.assertTrue(hasattr(message, "person_info"))
 
     @patch("contextio.lib.resources.base_resource.BaseResource.post")
     def test_post_sends_params_and_returns_True(self, mock_post):
@@ -114,7 +138,6 @@ class TestMessage(unittest.TestCase):
         mock_request.assert_called_with("folders", params=params)
 
         self.assertTrue(response)
-
 
     @patch("contextio.lib.resources.base_resource.BaseResource._request_uri")
     def test_put_folders_calls_request_uri_with_correct_args(self, mock_request):
@@ -212,7 +235,8 @@ class TestMessage(unittest.TestCase):
             "offset": 1
 
         }
-        message = Message(Mock(), {"message_id": "fake_message_id", "subject": "catpants"})
+
+        message = Message(Mock(spec=[]), {"message_id": "fake_message_id", "subject": "catpants"})
         message.get_thread(**params)
 
         self.assertEqual("catpants", message.thread.subject)

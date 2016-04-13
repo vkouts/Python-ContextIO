@@ -5,10 +5,9 @@ from contextio.lib.resources.email_account import EmailAccount
 from contextio.lib.resources.connect_token import ConnectToken
 from contextio.lib.resources.folder import Folder
 
-
 class TestEmailAccount(unittest.TestCase):
     def setUp(self):
-        self.email_account = EmailAccount(Mock(), {"label": "fake_label"})
+        self.email_account = EmailAccount(Mock(spec=[]), {"label": "fake_label"})
 
     def test_constructor_sets_attributes_on_object(self):
         self.assertTrue(hasattr(self.email_account, "status"))
@@ -40,7 +39,6 @@ class TestEmailAccount(unittest.TestCase):
 
         self.assertEqual(1, len(folders))
         self.assertIsInstance(folders[0], Folder)
-
 
     @patch("contextio.lib.resources.base_resource.BaseResource._request_uri")
     def test_get_connect_tokens_returns_list_of_ConnectTokens(self, mock_request):

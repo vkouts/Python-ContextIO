@@ -19,7 +19,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual("foo", self.api.consumer_key)
         self.assertEqual("bar", self.api.consumer_secret)
         self.assertEqual("https://api.context.io", self.api.url_base)
-        self.assertEqual("2.0", self.api.version)
+        self.assertEqual("2.0", self.api.api_version)
         self.assertEqual(None, self.api.debug)
         self.assertIsInstance(self.api.session, OAuth1Session)
 
@@ -29,13 +29,13 @@ class TestApi(unittest.TestCase):
             consumer_secret="bar",
             url_base="http://fake.url",
             debug="print",
-            version="lite"
+            api_version="lite"
         )
 
         self.assertEqual("foo", self.api.consumer_key)
         self.assertEqual("bar", self.api.consumer_secret)
         self.assertEqual("http://fake.url", self.api.url_base)
-        self.assertEqual("lite", self.api.version)
+        self.assertEqual("lite", self.api.api_version)
         self.assertEqual("print", self.api.debug)
 
     def test_constructor_maps_True_to_print_for_debug_value(self):
@@ -159,7 +159,7 @@ class TestApi(unittest.TestCase):
         mock_request = mock_session.return_value.request
         mock_request.return_value.status_code = 200
 
-        self.api = Api(consumer_key="foo", consumer_secret="bar", version="some_version")
+        self.api = Api(consumer_key="foo", consumer_secret="bar", api_version="some_version")
 
         self.api._request_uri("catpants", method="POST", body=json.dumps({"foo": "bar"}))
 
