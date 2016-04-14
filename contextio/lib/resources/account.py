@@ -146,11 +146,10 @@ class Account(BaseResource):
             'sort_by', 'sort_order'
         ]
 
-        contacts = super(Account, self).get(uri="contacts", return_bool=False, params=params, all_args=all_args)
+        params = helpers.sanitize_params(params, all_args)
+        contacts = self._request_uri("contacts", params=params)
 
-        return [
-            Contact(self, obj) for obj in contacts.get('matches')
-        ]
+        return [Contact(self, obj) for obj in contacts.get('matches')]
 
     def get_email_addresses(self):
         """List of email addresses used by an account.
