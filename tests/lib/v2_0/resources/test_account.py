@@ -45,7 +45,7 @@ class TestAccountResource(unittest.TestCase):
         self.assertIsInstance(account_connect_tokens[0], ConnectToken)
         self.assertIsInstance(account_connect_tokens[0].account, Account)
 
-    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource.get")
+    @patch("contextio.lib.v2_0.resources.base_resource.BaseResource._request_uri")
     def test_get_contacts_returns_list_of_contacts(self, mock_get):
         mock_get.return_value = {"matches": [{"email": "foo@bar.com"}]}
 
