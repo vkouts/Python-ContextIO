@@ -24,7 +24,7 @@ class ConnectToken(BaseResource):
     keys = {
         "2.0": [
             "token", "email", "created", "used", "expires", "callback_url",
-            "first_name", "last_name", "account", "user"
+            "first_name", "last_name", "account"
         ],
         "lite": [
             "token", "email", "account_lite", "created", "used", "status_callback_url",

@@ -56,6 +56,17 @@ class TestHelpers(unittest.TestCase):
         with self.assertRaises(ArgumentError):
             helpers.sanitize_params(params, all_args=allowed_args, required_args=["fish"])
 
+    def test_sanitize_params_ignores_params_that_are_set_to_None(self):
+        allowed_args = ["foo", "dog"]
+        params = {
+            "foo": None,
+            "dog": "shirt"
+        }
+
+        cleaned_params = helpers.sanitize_params(params, all_args=allowed_args)
+
+        self.assertEqual({"dog": "shirt"}, cleaned_params)
+
     # Not sure if this is being used anywhere - didn't want to remove it in case someone is using
     # this helper directly
     # def test_process_person_info()

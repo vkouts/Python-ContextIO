@@ -34,8 +34,8 @@ class Message(BaseResource):
     resource_id = "message_id"
     keys = {
         "2.0": [
-            'date', 'date_indexed', 'addresses', 'person_info', 'email_message_id', 'message_id',
-            'gmail_message_id', 'gmail_thread_id', 'files', 'subject', 'folders', 'sources'
+            "date", "date_indexed", "addresses", "person_info", "email_message_id", "message_id",
+            "gmail_message_id", "gmail_thread_id", "files", "subject", "folders", "sources"
         ],
         "lite": [
             "sent_at", "addresses", "subject", "email_message_id", "message_id", "list_headers",
@@ -452,7 +452,6 @@ class Message(BaseResource):
         all_args = ['delimiter']
         params = helpers.sanitize_params(params, all_args)
         self.attachments = self._request_uri('attachments', params=params)
-
 
     @only("lite")
     def post_read(self, **params):

@@ -14,7 +14,11 @@ class Lite(Api):
         req_args = ["email", "server", "username", "use_ssl", "port", "type"]
 
         if check_for_account_credentials(kwargs):
-            all_args = ["migrate_account_id", "first_name", "last_name"] + req_args
+            all_args = [
+                "password", "provider_refresh_token", "provider_consumer_key", "migrate_account_id",
+                "first_name", "last_name"
+            ] + req_args
+
             params = sanitize_params(kwargs, all_args, req_args)
 
             return User(self, self._request_uri("users", method="POST", params=params))

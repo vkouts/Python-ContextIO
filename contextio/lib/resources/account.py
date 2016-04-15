@@ -360,9 +360,7 @@ class Account(BaseResource):
         all_args = ['status', 'status_ok']
         params = helpers.sanitize_params(params, all_args)
 
-        return [Source(self, obj) for obj in self._request_uri(
-            'sources', params=params
-        )]
+        return [Source(self, obj) for obj in self._request_uri("sources", params=params)]
 
     def get_sync(self):
         """Sync status for all sources of the account.

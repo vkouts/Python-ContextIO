@@ -105,15 +105,13 @@ def sanitize_params(params, all_args, required_args=None):
 
     # remove any arguments not recognized
     cleaned_args = {}
-    for arg in all_args:
-        if arg in params:
-            cleaned_args[arg] = params[arg]
-            del params[arg]
-
-    # quietly yell in a non-breaking way if there's any unrecognized
-    # arguments left
-    if params:
-        logging.warning("Invalid arguments found: %s".format(", ".join(param for param in params)))
+    for key, val in params.iteritems():
+        if key in all_args and val is not None:
+            cleaned_args[key] = val
+        elif key in all_args and val is None:
+            logging.warning("Invalid arguments found: None was passed in for '{0}'".format(key))
+        else:
+            logging.warning("Invalid arguments found: '{0}'".format(key))
 
     return cleaned_args
 
