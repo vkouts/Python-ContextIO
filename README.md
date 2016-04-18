@@ -1,52 +1,64 @@
-Context.IO API v2.0 Python Library
+Context.IO API Python Library
 ==================================
 
-This is the python client library for v2.0 of the Context.IO API!
+This is the python client library the Context.IO API (Lite and v2.0)!
 
 Supports Python 2.7 (2.7.9 and up) and 3.
 
 ##Dependencies
-RAUTH - If you do not have that, snag it with
+If you plan on contributing to this project you will want to clone this repo and then use `pip` to install the dependencies.
+
+    pip install -r requirements.txt
+    pip install -r dev-requirements.txt
+
+
+This library relies on the following projects:
+
+- RAUTH - If you do not have that, snag it with
 ```$ pip install rauth```
 or
 ```$ easy_install rauth```
 , or “Use the [Source](https://github.com/litl/rauth), Luke”
 
-REQUESTS - rauth is built on top of the requests module
+- REQUESTS - rauth is built on top of the requests module
 ```$ pip install requests```
 or
 ```$ easy_install requests```
 or [Source](https://github.com/kennethreitz/requests)
 
-SIX - six is a python compatability library for having python2 and python3 in a common codebase
+- SIX - six is a python compatability library for having python2 and python3 in a common codebase
 ```$ pip install six```
 or
 ```$ easy_install six```
 or [Source](https://bitbucket.org/gutworth/six)
 
 ##Installation
+You can use pip to install the latest release (**recommended**):
+
+    pip install contextio
+
 Check out / download the module from git, change directory to the folder with setup.py and run:
 
     python setup.py install
 
-You'll probably want to toss a sudo before that, depending on your OS. That's it though!
-
-You can also use pip to install the latest release:
-
-	pip install contextio
+**NOTE:** To install from source you may need to use *_sudo_*
 
 ##Usage
 You first need to instantiate the main ContextIO object with your API credentials:
 
 	import contextio as c
 
-	CONSUMER_KEY = 'YOUR_API_KEY'
-	CONSUMER_SECRET = 'YOUR_API_SECRET'
+    CONSUMER_KEY = 'YOUR_API_KEY'
+    CONSUMER_SECRET = 'YOUR_API_SECRET'
+    API_VERSION = 'SOME_VERSION' # "lite" or "2.0"
 
-	context_io = c.ContextIO(
-		consumer_key=CONSUMER_KEY,
-		consumer_secret=CONSUMER_SECRET
-	)
+    context_io = c.ContextIO(
+      consumer_key=CONSUMER_KEY,
+      consumer_secret=CONSUMER_SECRET,
+      api_version=API_VERSION
+    )
+
+Modifying the `api_version` will give you access the methods associated with the different versions of the ContextIO API.  **By default the `ContextIO` factory returns the 2.0 API interface**
 
 The ContextIO class can optionally accept a debug keyword parameter that prints or logs more info about the request and response.
 
@@ -68,7 +80,7 @@ If you store account ids, message ids, file ids, or anything else like that on y
 	}
 	account = c.Account(context_io, params)
 
-That'll just be an empty object, but you need to pass in the "id" since that's used to form the URL for API endpoints for the account resource. If you want to query the API and populate that account object, you can simply do a:
+`account` will be an empty object, but you need to pass in the "id" since that's used to form the URL for API endpoints for the account resource. If you want to query the API and populate that account object, you can simply perform:
 
 	account.get()
 
@@ -82,5 +94,15 @@ You can use this same technique to populate sub-resource objects too.
 	message.get()
 
 Notice how the Message class needs an Account object as a parent? That's because the library uses an object's ancestors to build the URL.
+
+##Tests
+
+There are now unit tests for this library.  If you would like to submit a PR against this project please ensure that you include the appropriate unit tests.
+
+In order to run the tests make sure you install the `dev-dependencies`
+
+    pip install -r dev-requirements.txt
+
+##Questions?
 
 If you have any questions, don't hesitate to contact support@context.io
