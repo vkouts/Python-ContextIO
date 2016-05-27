@@ -3,9 +3,9 @@ from setuptools import setup, find_packages
 requires=['rauth', 'six']
 
 setup(name='contextio',
-    version='v1.11.0',
+    version='v1.11.1',
     description='Library for accessing the Context.IO API (v2.0 and Lite) in Python',
-    author='Tony Blank, Jesse Dhillon',
+    author='Tony Blank, Jesse Dhillon, Alex Tanton',
     author_email='tony@context.io, jesse@deva0.net',
     url='http://context.io',
     keywords=['contextIO', 'imap', 'oauth'],
