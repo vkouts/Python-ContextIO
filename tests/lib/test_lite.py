@@ -4,9 +4,6 @@ from contextio.lib.lite import Lite
 
 from contextio.lib import errors
 from contextio.lib.resources.user import User
-from contextio.lib.resources.connect_token import ConnectToken
-# from contextio.lib.resources.discovery import Discovery
-# from contextio.lib.resources.oauth_provider import OauthProvider
 
 class TestLite(unittest.TestCase):
     def setUp(self):
@@ -35,10 +32,10 @@ class TestLite(unittest.TestCase):
             self.api.post_connect_token(foo="bar")
 
     @mock.patch("contextio.lib.api.Api._request_uri")
-    def test_post_user_returns_ConnectToken(self, mock_request):
+    def test_post_connect_token_returns_dict(self, mock_request):
         mock_request.return_value = {"token": "fake_token"}
 
-        user = self.api.post_connect_token(callback_url="fake.url")
+        connect_token_request = self.api.post_connect_token(callback_url="fake.url")
 
-        self.assertIsInstance(user, ConnectToken)
+        self.assertEqual(connect_token_request, {"token": "fake_token"})
 

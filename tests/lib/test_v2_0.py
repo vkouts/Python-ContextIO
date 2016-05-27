@@ -57,9 +57,9 @@ class TestV2_0(unittest.TestCase):
     def test_post_connect_token_returns_ConnectToken(self, mock_request):
         mock_request.return_value = {"token": "fake_token"}
 
-        connect_token = self.api.post_connect_token(callback_url="http://some.callback.url")
+        connect_token_request = self.api.post_connect_token(callback_url="http://some.callback.url")
 
-        self.assertIsInstance(connect_token, ConnectToken)
+        self.assertEqual(connect_token_request, {"token": "fake_token"})
 
     @mock.patch("contextio.lib.api.Api._request_uri")
     def test_get_discovery_returns_discovery_object(self, mock_request):
