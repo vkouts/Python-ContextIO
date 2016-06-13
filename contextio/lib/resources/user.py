@@ -43,8 +43,12 @@ class User(BaseResource):
             uri="connect_tokens", return_bool=False, params=params, all_args=all_args,
             required_args=req_args)
 
-    def get_email_accounts(self):
-        return [EmailAccount(self, obj) for obj in self._request_uri("email_accounts")]
+    def get_email_accounts(self, **params):
+        all_args = ["status", "status_ok"]
+
+        params = sanitize_params(params, all_args)
+
+        return [EmailAccount(self, obj) for obj in self._request_uri("email_accounts", params=params)]
 
     def post_email_account(self, **kwargs):
         req_args = ["email", "server", "username", "use_ssl", "port", "type"]

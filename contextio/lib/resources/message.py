@@ -116,8 +116,20 @@ class Message(BaseResource):
 
         return super(Message, self).get(params=params, all_args=all_args)
 
-    def put(self):
-        logging.info("This method is not implemented")
+    @only("lite")
+    def put(self, **params):
+        """Get file, contact and other information about a given email message.
+
+        Documentation: http://context.io/docs/2.0/accounts/messages#id-get
+
+        Optional Arguments:
+
+        Returns:
+            True if self is updated, else will throw a request error
+        """
+        all_args = ["new_folder_id", "delimiter"]
+
+        return super(Message, self).get(params=params, all_args=all_args)
 
     def post(self, return_bool=True, **params):
         """Copy or move a message.
