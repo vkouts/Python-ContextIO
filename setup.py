@@ -13,5 +13,5 @@ setup(name='contextio',
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
-    download_url='https://github.com/contextio/Python-ContextIO/archive/v1.11.0.tar.gz',
+    download_url='https://github.com/contextio/Python-ContextIO/archive/v1.11.2.tar.gz',
 )
